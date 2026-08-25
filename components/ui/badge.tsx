@@ -19,10 +19,24 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Severity variants — same palette as utils/alertColors.ts, for
+        // status badges outside the alert-card context (tables, timelines).
+        critical: "border-red-300 bg-red-100 text-red-800 dark:border-red-500/30 dark:bg-red-500/15 dark:text-red-300",
+        warning:
+          "border-yellow-300 bg-yellow-100 text-yellow-800 dark:border-yellow-500/30 dark:bg-yellow-500/15 dark:text-yellow-300",
+        info: "border-blue-300 bg-blue-100 text-blue-800 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300",
+        success:
+          "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300",
+      },
+      size: {
+        sm: "h-4 px-1.5 text-[0.6875rem]",
+        md: "h-5 px-2 text-xs",
+        lg: "h-6 px-2.5 text-sm",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "md",
     },
   }
 )
@@ -30,6 +44,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = "default",
+  size = "md",
   render,
   ...props
 }: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
@@ -37,7 +52,7 @@ function Badge({
     defaultTagName: "span",
     props: mergeProps<"span">(
       {
-        className: cn(badgeVariants({ variant }), className),
+        className: cn(badgeVariants({ variant, size }), className),
       },
       props
     ),

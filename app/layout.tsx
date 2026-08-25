@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Sora } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import { Sidebar } from "@/components/sidebar";
+import { Header } from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -31,13 +33,19 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${fontSans.variable} ${fontHeading.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="flex h-screen flex-col overflow-hidden bg-background text-foreground font-sans md:flex-row">
-        <Sidebar />
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-8">{children}</div>
-        </main>
-        <Toaster position="top-right" />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <Sidebar />
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <Header />
+            <main className="min-h-0 flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-8">{children}</div>
+            </main>
+          </div>
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );
