@@ -9,7 +9,8 @@ request time with a logged warning.
 
 | Variable               | Required | Default (if unset)         | Used by                                      |
 | ------------------------ | :------: | ---------------------------- | ----------------------------------------------- |
-| `DB_HOST`                | no       | `localhost`                  | `lib/database.ts`                                |
+| `DATABASE_URL`           | no (hosted Postgres) | — | `lib/database.ts` — when set, takes priority over the `DB_*` vars below and connects with SSL (`rejectUnauthorized: false`). Use this for Neon/Supabase/Railway/Vercel Postgres/etc. |
+| `DB_HOST`                | no       | `localhost`                  | `lib/database.ts` — ignored if `DATABASE_URL` is set |
 | `DB_PORT`                | no       | `5432`                       | `lib/database.ts`                                |
 | `DB_NAME`                | no       | `lesaffre_hr`                 | `lib/database.ts`                                |
 | `DB_USER`                | no       | `postgres`                    | `lib/database.ts`                                |

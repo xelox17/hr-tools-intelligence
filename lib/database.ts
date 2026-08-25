@@ -6,12 +6,21 @@ class DatabaseManager {
   private isConnected: boolean = false;
 
   private constructor() {
+    // Hosted Postgres (Neon, Supabase, Railway, Vercel Postgres, ...) is
+    // reached via a single DATABASE_URL and requires SSL; local/self-hosted
+    // Postgres keeps using the separate DB_* vars with no SSL, as before.
+    const connectionString = process.env.DATABASE_URL;
+
     this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      database: process.env.DB_NAME || 'lesaffre_hr',
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
+      ...(connectionString
+        ? { connectionString, ssl: { rejectUnauthorized: false } }
+        : {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT || '5432', 10),
+            database: process.env.DB_NAME || 'lesaffre_hr',
+            user: process.env.DB_USER || 'postgres',
+            password: process.env.DB_PASSWORD || 'postgres',
+          }),
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
