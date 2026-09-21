@@ -17,11 +17,11 @@ import { SESSION_COOKIE, resolveSessionUser, signSession, verifySession } from '
 import { PAGE_KEYS, USER_ROLES, type PageKey, type UserRole } from '../types';
 
 const EXPECTED_PAGES: Record<UserRole, PageKey[]> = {
-  ADMIN: ['DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL', 'SETTINGS', 'API_KEYS', 'AUDIT_LOGS'],
-  RH_MANAGER: ['DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
-  RECRUITER: ['DASHBOARD', 'RECRUITMENT', 'POLICIES'],
-  MANAGER: ['DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
-  EMPLOYEE: ['DASHBOARD', 'POLICIES', 'TEAM', 'PAYROLL'],
+  ADMIN: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL', 'SETTINGS', 'API_KEYS', 'AUDIT_LOGS'],
+  RH_MANAGER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
+  RECRUITER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES'],
+  MANAGER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
+  EMPLOYEE: ['CATALOG', 'DASHBOARD', 'POLICIES', 'TEAM', 'PAYROLL'],
 };
 
 async function cookieFor(role: UserRole): Promise<string> {
@@ -51,6 +51,12 @@ describe('permission matrix', () => {
 
   it.each(USER_ROLES)('%s sees exactly its own pages, in navigation order', (role) => {
     expect(getAccessiblePages(role)).toEqual(EXPECTED_PAGES[role]);
+  });
+
+  it.each(USER_ROLES)('%s can always open the Catalog, first in the list, with no restriction', (role) => {
+    expect(getAccessiblePages(role)[0]).toBe('CATALOG');
+    expect(canAccess(role, 'CATALOG', 'view')).toBe(true);
+    expect(decidePageAccess('/catalog', role).decision).toBe('allow');
   });
 
   it('gives each role the specified capabilities', () => {
@@ -155,6 +161,7 @@ describe('page gate decisions', () => {
     ['/dashboard/alerts', 'EMPLOYEE', 'allow'],
     ['/error/unauthorized', 'RECRUITER', 'allow'],
     ['/', 'EMPLOYEE', 'allow'],
+    ['/catalog', null, 'login'],
     ['/payroll', null, 'login'],
     ['/', null, 'login'],
     ['/login', null, 'allow'],

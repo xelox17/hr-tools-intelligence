@@ -1,4 +1,7 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { Activity, Bell, Bot, Code2, Download, Plug, Sparkles } from "lucide-react";
+import { AccessGate } from "@/components/auth/AccessGate";
 import { CatalogView } from "@/components/catalog-view";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -20,10 +23,43 @@ function CatalogSkeleton() {
   );
 }
 
+// Open to every signed-in role. These spaces are not role-restricted either, so they are
+// reached from here rather than crowding the sidebar.
+const OTHER_SPACES = [
+  { href: "/insights", label: "AI Insights", icon: Sparkles },
+  { href: "/dashboard/ai-assistant", label: "AI Assistant", icon: Bot },
+  { href: "/dashboard/health", label: "Health", icon: Activity },
+  { href: "/dashboard/alerts", label: "Alerts", icon: Bell },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
+  { href: "/dashboard/exports", label: "Exports", icon: Download },
+  { href: "/api-docs", label: "API Docs", icon: Code2 },
+];
+
 export default function CatalogPage() {
   return (
-    <Suspense fallback={<CatalogSkeleton />}>
-      <CatalogView />
-    </Suspense>
+    <AccessGate page="CATALOG">
+      <div className="flex flex-col gap-8">
+        <Suspense fallback={<CatalogSkeleton />}>
+          <CatalogView />
+        </Suspense>
+
+        <nav aria-label="Other spaces" className="flex flex-col gap-3 border-t border-border pt-6">
+          <h2 className="font-heading text-sm font-semibold text-foreground">Other spaces</h2>
+          <ul className="flex flex-wrap gap-2">
+            {OTHER_SPACES.map(({ href, label, icon: Icon }) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                >
+                  <Icon className="h-4 w-4 text-primary" aria-hidden />
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </AccessGate>
   );
 }

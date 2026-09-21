@@ -4,6 +4,7 @@ import {
   FileText,
   KeyRound,
   LayoutDashboard,
+  LibraryBig,
   ScrollText,
   Settings,
   Users,
@@ -20,6 +21,7 @@ export interface NavItem {
 }
 
 const PAGE_ICONS: Record<PageKey, LucideIcon> = {
+  CATALOG: LibraryBig,
   DASHBOARD: LayoutDashboard,
   RECRUITMENT: Briefcase,
   POLICIES: FileText,
@@ -47,7 +49,6 @@ export const NAV_LABELS: Record<string, string> = {
   "/dashboard/alerts": "Alerts",
   "/dashboard/integrations": "Integrations",
   "/dashboard/exports": "Exports",
-  "/catalog": "Catalog",
   "/insights": "AI Insights",
   "/api-docs": "API Docs",
   "/error/unauthorized": "Access denied",

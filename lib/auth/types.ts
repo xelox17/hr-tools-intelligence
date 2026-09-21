@@ -8,6 +8,7 @@ export const USER_ROLES = ['ADMIN', 'RH_MANAGER', 'RECRUITER', 'MANAGER', 'EMPLO
 export type UserRole = (typeof USER_ROLES)[number];
 
 export const PAGE_KEYS = [
+  'CATALOG',
   'DASHBOARD',
   'RECRUITMENT',
   'POLICIES',

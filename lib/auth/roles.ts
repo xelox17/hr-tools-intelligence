@@ -5,6 +5,14 @@ type RolePermissions = Partial<Record<PermissionAction, boolean>>;
 type PermissionMatrix = Record<PageKey, Record<UserRole, RolePermissions>>;
 
 export const PERMISSIONS: PermissionMatrix = {
+  // The tools hub: open to every role, no restriction and nothing to edit.
+  CATALOG: {
+    ADMIN: { view: true },
+    RH_MANAGER: { view: true },
+    RECRUITER: { view: true },
+    MANAGER: { view: true },
+    EMPLOYEE: { view: true },
+  },
   DASHBOARD: {
     ADMIN: { view: true, edit: true, viewAll: true },
     RH_MANAGER: { view: true, edit: true, viewAll: true },
@@ -80,6 +88,7 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
 };
 
 export const PAGE_LABELS: Record<PageKey, string> = {
+  CATALOG: 'Catalog',
   DASHBOARD: 'Dashboard',
   RECRUITMENT: 'Recruitment',
   POLICIES: 'Policies',
@@ -92,6 +101,7 @@ export const PAGE_LABELS: Record<PageKey, string> = {
 
 /** URL of each protected page (used by navigation, redirects and the proxy gate). */
 export const PAGE_ROUTES: Record<PageKey, string> = {
+  CATALOG: '/catalog',
   DASHBOARD: '/dashboard',
   RECRUITMENT: '/recruitment',
   POLICIES: '/policies',

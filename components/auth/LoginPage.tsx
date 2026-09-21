@@ -53,7 +53,7 @@ export function LoginPage() {
   // A full navigation, so the server renders the app again with the new session cookie.
   async function handleLogin(userId: string) {
     setError(null);
-    if (await login(userId)) window.location.assign("/dashboard");
+    if (await login(userId)) window.location.assign("/catalog");
     else setError("Sign-in is unavailable right now. Please try again later.");
   }
 
