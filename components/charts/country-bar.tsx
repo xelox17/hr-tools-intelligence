@@ -27,7 +27,7 @@ export function CountryBarChart({ data }: { data: CountryCount[] }) {
           cursor={{ fill: "#F4F6FA" }}
           contentStyle={{ borderRadius: 10, border: "1px solid #E3E8F0", fontSize: 12 }}
         />
-        <Bar dataKey="count" name="Tools" fill="#00A88E" radius={[0, 6, 6, 0]} maxBarSize={22} />
+        <Bar dataKey="count" name="Tools" fill="#0066CC" radius={[0, 6, 6, 0]} maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>
   );

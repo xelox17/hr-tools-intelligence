@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState } from "react";
+import { usePathname } from "next/navigation";
 import { LayoutDashboard, RefreshCw } from "lucide-react";
 
 interface DashboardRefreshContextValue {
@@ -29,7 +30,11 @@ function RefreshIndicator() {
   );
 }
 
+// The assistant page has its own banner; the ops-dashboard header would be misleading there.
+const ROUTES_WITHOUT_HEADER = ["/dashboard/ai-assistant"];
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const notifyRefresh = useCallback(() => {
@@ -39,22 +44,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <DashboardRefreshContext.Provider value={{ lastUpdated, notifyRefresh }}>
       <div className="flex flex-col gap-6">
-        <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
-              <LayoutDashboard className="h-5 w-5" />
+        {!ROUTES_WITHOUT_HEADER.includes(pathname) && (
+          <header className="flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/5 text-primary">
+                <LayoutDashboard className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="font-heading text-xl font-bold text-foreground sm:text-2xl">
+                  Lesaffre HR Tools Dashboard
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Live alerts, tool health, and data quality across the HR toolset.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-heading text-xl font-bold text-foreground sm:text-2xl">
-                Lesaffre HR Tools Dashboard
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Live alerts, tool health, and data quality across the HR toolset.
-              </p>
-            </div>
-          </div>
-          <RefreshIndicator />
-        </header>
+            <RefreshIndicator />
+          </header>
+        )}
         {children}
       </div>
     </DashboardRefreshContext.Provider>

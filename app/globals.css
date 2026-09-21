@@ -9,8 +9,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-heading: var(--font-heading);
-  --color-lesaffre-navy: var(--lesaffre-navy);
-  --color-lesaffre-green: var(--lesaffre-green);
+  --color-lesaffre-blue: var(--lesaffre-blue);
+  --color-lesaffre-dark-blue: var(--lesaffre-dark-blue);
+  --color-lesaffre-cyan: var(--lesaffre-cyan);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,77 +50,82 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Lesaffre theme. These values mirror lib/config/branding.ts — keep the two
+ * in sync (lib/config/__tests__/branding.test.ts enforces it, and checks
+ * WCAG AA contrast for the text/background pairs).
+ */
 :root {
-  --lesaffre-navy: #0a1f44;
-  --lesaffre-green: #00a88e;
+  --lesaffre-blue: #0066cc;
+  --lesaffre-dark-blue: #00366b;
+  --lesaffre-cyan: #00b4d8;
 
-  --background: #f4f6fa;
-  --foreground: #16233b;
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
   --card: #ffffff;
-  --card-foreground: #16233b;
+  --card-foreground: #1a1a1a;
   --popover: #ffffff;
-  --popover-foreground: #16233b;
-  --primary: #0a1f44;
+  --popover-foreground: #1a1a1a;
+  --primary: #0066cc;
   --primary-foreground: #ffffff;
-  --secondary: #edf1f7;
-  --secondary-foreground: #0a1f44;
-  --muted: #edf1f7;
-  --muted-foreground: #5b6b85;
-  --accent: #00a88e;
+  --secondary: #e6f0fa;
+  --secondary-foreground: #00366b;
+  --muted: #ebeff4;
+  --muted-foreground: #566170;
+  --accent: #006e9c;
   --accent-foreground: #ffffff;
-  --destructive: #d9463e;
-  --border: #e3e8f0;
-  --input: #e3e8f0;
-  --ring: #00a88e;
-  --chart-1: #0a1f44;
-  --chart-2: #00a88e;
-  --chart-3: #3b7ddb;
+  --destructive: #c93a32;
+  --border: #d9e0e8;
+  --input: #d9e0e8;
+  --ring: #0066cc;
+  --chart-1: #0066cc;
+  --chart-2: #00b4d8;
+  --chart-3: #00366b;
   --chart-4: #e3a23c;
   --chart-5: #8b5fbf;
-  --radius: 0.625rem;
-  --sidebar: #0a1f44;
-  --sidebar-foreground: #f4f6fa;
-  --sidebar-primary: #00a88e;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #0066cc;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.12);
-  --sidebar-ring: #00a88e;
+  --sidebar-accent: #e6f0fa;
+  --sidebar-accent-foreground: #00366b;
+  --sidebar-border: #d9e0e8;
+  --sidebar-ring: #0066cc;
 }
 
 .dark {
-  --background: #0a1120;
-  --foreground: #e8ecf5;
-  --card: #101a30;
-  --card-foreground: #e8ecf5;
-  --popover: #101a30;
-  --popover-foreground: #e8ecf5;
-  --primary: #00c9a7;
-  --primary-foreground: #061018;
-  --secondary: #16213b;
-  --secondary-foreground: #e8ecf5;
-  --muted: #16213b;
-  --muted-foreground: #8a97b3;
-  --accent: #00c9a7;
-  --accent-foreground: #061018;
-  --destructive: #f0685f;
-  --border: #1f2b47;
-  --input: #1f2b47;
-  --ring: #00c9a7;
-  --chart-1: #6f9de8;
-  --chart-2: #00c9a7;
-  --chart-3: #8bb4f0;
+  --background: #03172c;
+  --foreground: #ffffff;
+  --card: #072844;
+  --card-foreground: #ffffff;
+  --popover: #072844;
+  --popover-foreground: #ffffff;
+  --primary: #4da3ff;
+  --primary-foreground: #00182f;
+  --secondary: #0b3560;
+  --secondary-foreground: #ffffff;
+  --muted: #0b3560;
+  --muted-foreground: #a9bcd6;
+  --accent: #00b4d8;
+  --accent-foreground: #00243f;
+  --destructive: #ff7b72;
+  --border: #134272;
+  --input: #134272;
+  --ring: #4da3ff;
+  --chart-1: #4da3ff;
+  --chart-2: #00b4d8;
+  --chart-3: #8cc4ff;
   --chart-4: #f0b955;
   --chart-5: #b490e0;
-  --radius: 0.625rem;
-  --sidebar: #060d1c;
-  --sidebar-foreground: #e8ecf5;
-  --sidebar-primary: #00c9a7;
-  --sidebar-primary-foreground: #061018;
-  --sidebar-accent: rgba(255, 255, 255, 0.06);
-  --sidebar-accent-foreground: #e8ecf5;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #00c9a7;
+  --sidebar: #00366b;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #00b4d8;
+  --sidebar-primary-foreground: #00243f;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+  --sidebar-ring: #00b4d8;
 }
 
 @layer base {
@@ -131,5 +137,22 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /* Smooth light/dark switch. In @layer base so component-level `transition-*`
+     utilities still win, and skipped for users who prefer reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    body,
+    header,
+    aside,
+    [data-slot="card"],
+    input,
+    textarea,
+    select {
+      transition:
+        background-color 200ms ease,
+        color 200ms ease,
+        border-color 200ms ease;
+    }
   }
 }

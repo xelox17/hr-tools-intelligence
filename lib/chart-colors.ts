@@ -1,7 +1,7 @@
 import type { ToolScope } from "@/lib/types";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  HRIS: "#0A1F44",
+  HRIS: "#0066CC",
   Recruitment: "#00A88E",
   Learning: "#3B82C4",
   Payroll: "#E3A23C",
@@ -21,6 +21,6 @@ export function getCategoryColor(category: string): string {
 }
 
 export const SCOPE_COLORS: Record<ToolScope, string> = {
-  Corporate: "#0A1F44",
-  Local: "#00A88E",
+  Corporate: "#0066CC",
+  Local: "#00B4D8",
 };

@@ -97,7 +97,7 @@ function NotificationBell() {
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[0.625rem] font-bold text-white">
+          <span className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[0.625rem] font-bold text-white dark:text-background">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -152,6 +152,26 @@ function AdminStatus() {
   );
 }
 
+// Placeholder until real authentication exists — swap for the signed-in user.
+const CURRENT_USER = { name: "Anas Mehri", role: "Collaborateur RH", initials: "AM" };
+
+function UserProfile() {
+  return (
+    <div className="ml-1 flex items-center gap-2.5 border-l border-border pl-3" title={CURRENT_USER.name}>
+      <span
+        aria-hidden
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
+      >
+        {CURRENT_USER.initials}
+      </span>
+      <div className="hidden min-w-0 flex-col leading-tight md:flex">
+        <span className="truncate text-sm font-medium text-foreground">{CURRENT_USER.name}</span>
+        <span className="truncate text-xs text-muted-foreground">{CURRENT_USER.role}</span>
+      </div>
+    </div>
+  );
+}
+
 export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:px-8">
@@ -162,6 +182,7 @@ export function Header() {
         <AdminStatus />
         <NotificationBell />
         <ThemeToggle />
+        <UserProfile />
       </div>
     </header>
   );
