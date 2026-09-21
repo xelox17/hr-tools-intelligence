@@ -85,3 +85,17 @@ describe('brand variables', () => {
     expect(contrast(BRAND_COLORS.textLight, BRAND_COLORS.darkBlue)).toBeGreaterThanOrEqual(AA_TEXT);
   });
 });
+
+describe('role badges', () => {
+  const badges = [...css.matchAll(/(\.dark )?\.role-badge-([\w-]+) \{ --badge-bg: (#\w+); --badge-fg: (#\w+); \}/g)].map(
+    ([, dark, role, bg, fg]) => ({ label: `${dark ? 'dark' : 'light'} ${role}`, bg, fg })
+  );
+
+  it('defines a light and a dark badge for each of the 5 roles', () => {
+    expect(badges).toHaveLength(10);
+  });
+
+  it.each(badges.map((badge) => [badge.label, badge.bg, badge.fg]))('%s badge meets WCAG AA', (_label, bg, fg) => {
+    expect(contrast(fg, bg)).toBeGreaterThanOrEqual(AA_TEXT);
+  });
+});

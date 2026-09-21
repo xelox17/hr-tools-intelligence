@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Inter, Poppins } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
-import { FloatingChatWidget } from "@/components/FloatingChatWidget";
+import { AppShell } from "@/components/app-shell";
+import { AuthProvider } from "@/lib/auth/auth-context";
+import { SESSION_COOKIE, getUserFromToken } from "@/lib/auth/session";
 import { Toaster } from "@/components/ui/sonner";
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 import "./globals.css";
@@ -26,11 +27,14 @@ export const metadata: Metadata = {
     "BI & AI layer over Lesaffre's global HR toolset — case study by Anas Mehri, ESAIP Angers.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // The signed session cookie is verified on the server, so the client never decides its own role.
+  const user = await getUserFromToken((await cookies()).get(SESSION_COOKIE)?.value);
+
   return (
     <html
       lang="fr"
@@ -39,14 +43,9 @@ export default function RootLayout({
     >
       <body className="flex h-screen flex-col overflow-hidden bg-background text-foreground font-sans md:flex-row">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Sidebar />
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <Header />
-            <main className="min-h-0 flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-8">{children}</div>
-            </main>
-          </div>
-          <FloatingChatWidget />
+          <AuthProvider user={user}>
+            <AppShell>{children}</AppShell>
+          </AuthProvider>
           <Toaster position="top-right" />
         </ThemeProvider>
       </body>

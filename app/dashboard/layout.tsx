@@ -30,8 +30,8 @@ function RefreshIndicator() {
   );
 }
 
-// The assistant page has its own banner; the ops-dashboard header would be misleading there.
-const ROUTES_WITHOUT_HEADER = ["/dashboard/ai-assistant"];
+// These pages bring their own heading; the ops-dashboard header would be misleading there.
+const ROUTES_WITHOUT_HEADER = ["/dashboard", "/dashboard/ai-assistant"];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

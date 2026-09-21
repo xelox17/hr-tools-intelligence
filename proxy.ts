@@ -32,6 +32,9 @@ import {
   verifyJwt,
   type JwtIdentity,
 } from '@/middleware/auth';
+import { getSessionUser } from '@/lib/auth/session';
+import { checkPermission } from '@/lib/auth/middleware';
+import { LOGIN_ROUTE, UNAUTHORIZED_ROUTE, decidePageAccess } from '@/lib/auth/page-gate';
 
 // New, genuinely-sensitive routes only — see docs/SECURITY.md § Authentication
 // for why existing routes (dashboard, sync, alerts, exports, webhooks) are
@@ -53,7 +56,38 @@ export async function proxy(request: NextRequest) {
     return finish(request, new NextResponse(null, { status: 204 }));
   }
 
+  // Pages are gated by the session role only: no rate limit and no API security
+  // headers (they never applied to pages, and a CSP could break Next.js scripts).
+  if (!request.nextUrl.pathname.startsWith('/api/')) {
+    return gatePage(request);
+  }
+
   return finish(request, await handle(request));
+}
+
+/**
+ * Server-side page gate: runs before any page code, so a role that may not
+ * open a page never receives its HTML (no flash, nothing to inspect).
+ *   no valid session      -> /login
+ *   session, no access    -> /error/unauthorized (and the denial is audited)
+ */
+async function gatePage(request: NextRequest): Promise<NextResponse> {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith('/_next') || pathname.startsWith('/__nextjs')) return NextResponse.next();
+
+  const user = await getSessionUser(request);
+  const { decision, page } = decidePageAccess(pathname, user?.role ?? null);
+
+  if (decision === 'login') return NextResponse.redirect(new URL(LOGIN_ROUTE, request.url));
+
+  if (decision === 'unauthorized') {
+    if (user && page) {
+      await checkPermission(user.role, page, 'view', { userId: user.id, userName: user.name, ip: getClientIp(request) });
+    }
+    return NextResponse.redirect(new URL(UNAUTHORIZED_ROUTE, request.url));
+  }
+
+  return NextResponse.next();
 }
 
 async function handle(request: NextRequest): Promise<NextResponse> {
@@ -126,5 +160,7 @@ async function handle(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ['/api/:path*'],
+  // Everything except Next.js internals and static assets: API routes (existing
+  // pipeline) and pages (session gate).
+  matcher: ['/((?!_next|__nextjs|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json)$).*)'],
 };

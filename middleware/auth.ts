@@ -13,33 +13,12 @@
 
 import { jwtVerify, SignJWT } from 'jose';
 import { apiKeyManager, type ApiKeyRecord } from '@/lib/api-keys';
+import { getJwtSecret } from '@/lib/auth/secret';
 
 export interface JwtIdentity {
   userId: string;
   role: string;
   email?: string;
-}
-
-const DEV_ONLY_FALLBACK_SECRET = 'dev-secret-min-32-characters-long-not-for-prod';
-
-function getJwtSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET;
-
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('JWT_SECRET is not set. Refusing to run in production without it.');
-    }
-    console.warn(
-      '⚠️ [auth] JWT_SECRET is not set — using an insecure dev-only fallback. Set JWT_SECRET before deploying (see .env.example).'
-    );
-    return new TextEncoder().encode(DEV_ONLY_FALLBACK_SECRET);
-  }
-
-  if (secret.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters (HS256 minimum key strength).');
-  }
-
-  return new TextEncoder().encode(secret);
 }
 
 export function extractBearerToken(request: Request): string | null {

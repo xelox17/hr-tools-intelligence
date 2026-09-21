@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAdminToken } from "@/hooks/useAdminToken";
-import { NAV_LABELS } from "@/components/sidebar";
+import { usePermission } from "@/lib/auth/hooks";
+import { NAV_LABELS } from "@/lib/auth/nav-items";
+import { UserProfileDropdown } from "@/components/auth/UserProfileDropdown";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_ICON = { critical: AlertOctagon, warning: AlertTriangle, info: Info } as const;
@@ -134,11 +136,15 @@ function NotificationBell() {
   );
 }
 
+/** Admin-token shortcut to Settings: only rendered for roles that can open Settings. */
 function AdminStatus() {
   const { hasToken } = useAdminToken();
+  const canOpenSettings = usePermission("SETTINGS", "view");
+  if (!canOpenSettings) return null;
+
   return (
     <Link
-      href="/dashboard/admin/settings"
+      href="/settings"
       className={cn(
         "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted",
         hasToken ? "text-foreground" : "text-muted-foreground"
@@ -152,26 +158,6 @@ function AdminStatus() {
   );
 }
 
-// Placeholder until real authentication exists — swap for the signed-in user.
-const CURRENT_USER = { name: "Anas Mehri", role: "Collaborateur RH", initials: "AM" };
-
-function UserProfile() {
-  return (
-    <div className="ml-1 flex items-center gap-2.5 border-l border-border pl-3" title={CURRENT_USER.name}>
-      <span
-        aria-hidden
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
-      >
-        {CURRENT_USER.initials}
-      </span>
-      <div className="hidden min-w-0 flex-col leading-tight md:flex">
-        <span className="truncate text-sm font-medium text-foreground">{CURRENT_USER.name}</span>
-        <span className="truncate text-xs text-muted-foreground">{CURRENT_USER.role}</span>
-      </div>
-    </div>
-  );
-}
-
 export function Header() {
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:px-8">
@@ -182,7 +168,7 @@ export function Header() {
         <AdminStatus />
         <NotificationBell />
         <ThemeToggle />
-        <UserProfile />
+        <UserProfileDropdown />
       </div>
     </header>
   );
