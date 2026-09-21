@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import DatabaseManager from '@/lib/database';
 import { successResponse, ErrorResponses } from '@/lib/response';
+import { requirePermission } from '@/lib/auth/server-guard';
 
 const CSV_TYPES = ['tools', 'employees', 'alerts'];
 const PDF_TYPES = ['health', 'summary'];
@@ -33,7 +34,11 @@ function computeNextRun(frequency: string, from: Date = new Date()): Date {
   return next;
 }
 
-export async function GET() {
+// EXPORTS permissions: view = list schedules, create = add one, delete = remove one.
+export async function GET(request: NextRequest) {
+  const guard = await requirePermission(request, 'EXPORTS', 'view');
+  if (!guard.ok) return guard.response;
+
   try {
     const db = DatabaseManager.getInstance();
     await db.connect();
@@ -52,6 +57,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requirePermission(request, 'EXPORTS', 'create');
+  if (!guard.ok) return guard.response;
+
   try {
     const body: CreateScheduleBody = await request.json();
 
@@ -90,6 +98,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const guard = await requirePermission(request, 'EXPORTS', 'delete');
+  if (!guard.ok) return guard.response;
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const SEVERITY_ORDER: Record<string, number> = { critical: 0, warning: 1, info: 2 };
 
 const QUICK_ACTIONS = [
-  { href: "/dashboard/exports", label: "Export data", icon: Download },
+  { href: "/exports", label: "Export data", icon: Download },
   { href: "/audit-logs", label: "View audit log", icon: ScrollText },
   { href: "/api-keys", label: "Manage API keys", icon: KeyRound },
 ];

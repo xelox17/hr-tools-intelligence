@@ -23,7 +23,7 @@ const QUICK_ACCESS = [
     icon: LayoutDashboard,
   },
   {
-    href: "/dashboard/ai-assistant",
+    href: "/ai-assistant",
     title: "Assistant RH IA",
     description: "Posez vos questions RH à tout moment (mode démo).",
     icon: Bot,
@@ -68,7 +68,7 @@ export default function DashboardPage() {
           <p className="text-base text-white/90 sm:text-lg">{LESAFFRE_THEME.tagline}</p>
           <div className="mt-2 flex flex-wrap gap-3">
             <Link
-              href="/dashboard/ai-assistant"
+              href="/ai-assistant"
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-lesaffre-blue transition-colors hover:bg-white/90 focus-visible:ring-3 focus-visible:ring-white/60 focus-visible:outline-none"
             >
               <Bot className="h-4 w-4" />

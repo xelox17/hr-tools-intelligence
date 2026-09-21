@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFGenerator } from '@/lib/export/pdf-generator';
 import { createZip } from '@/lib/export/zip';
+import { requirePermission } from '@/lib/auth/server-guard';
 
 const ZIP_THRESHOLD_BYTES = 10 * 1024 * 1024;
 const VALID_TYPES = ['health', 'summary'] as const;
 
 export async function GET(request: NextRequest) {
+  const guard = await requirePermission(request, 'EXPORTS', 'create');
+  if (!guard.ok) return guard.response;
+
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') ?? 'health';

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 // The full-page assistant has its own ChatComponent; a second useChat
 // instance on the same page would not see the first one's in-memory state.
-const FULL_PAGE_ROUTE = "/dashboard/ai-assistant";
+const FULL_PAGE_ROUTE = "/ai-assistant";
 const PANEL_ID = "floating-chat-panel";
 
 export function FloatingChatWidget() {

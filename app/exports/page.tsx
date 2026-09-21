@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { AccessGate } from "@/components/auth/AccessGate";
+import { ProtectedContent } from "@/components/auth/ProtectedContent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,7 +51,7 @@ function extractFilename(disposition: string | null, fallback: string): string {
   return match?.[1] ?? fallback;
 }
 
-export default function ExportsPage() {
+function ExportsView() {
   const [modalOpen, setModalOpen] = useState(false);
   const [schedules, setSchedules] = useState<ScheduledExport[]>([]);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
@@ -227,15 +229,17 @@ export default function ExportsPage() {
                       · Next run: {schedule.next_run ? new Date(schedule.next_run).toLocaleString() : "—"}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 text-destructive hover:bg-destructive/10"
-                    onClick={() => handleDelete(schedule.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
+                  <ProtectedContent page="EXPORTS" action="delete">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDelete(schedule.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </Button>
+                  </ProtectedContent>
                 </CardContent>
               </Card>
             ))}
@@ -245,5 +249,13 @@ export default function ExportsPage() {
 
       <ExportModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onExport={handleExport} />
     </div>
+  );
+}
+
+export default function ExportsPage() {
+  return (
+    <AccessGate page="EXPORTS">
+      <ExportsView />
+    </AccessGate>
   );
 }

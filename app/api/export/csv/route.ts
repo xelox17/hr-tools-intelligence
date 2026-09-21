@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CSVGenerator } from '@/lib/export/csv-generator';
 import { createZip } from '@/lib/export/zip';
+import { requirePermission } from '@/lib/auth/server-guard';
 
 const ZIP_THRESHOLD_BYTES = 10 * 1024 * 1024;
 const VALID_TYPES = ['tools', 'employees', 'alerts'] as const;
@@ -10,7 +11,12 @@ function isExportType(value: string | null): value is ExportType {
   return value !== null && (VALID_TYPES as readonly string[]).includes(value);
 }
 
+// Generating an export needs the EXPORTS "create" permission (ADMIN, RH_MANAGER, RECRUITER);
+// the "employees" report is personal data, so the check happens server-side, not just in the page.
 export async function GET(request: NextRequest) {
+  const guard = await requirePermission(request, 'EXPORTS', 'create');
+  if (!guard.ok) return guard.response;
+
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');

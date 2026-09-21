@@ -7,13 +7,17 @@
 export const USER_ROLES = ['ADMIN', 'RH_MANAGER', 'RECRUITER', 'MANAGER', 'EMPLOYEE'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
+// Order = sidebar order: the universal pages first, then the role-dependent ones.
 export const PAGE_KEYS = [
+  'HOME',
   'CATALOG',
+  'AI_ASSISTANT',
   'DASHBOARD',
   'RECRUITMENT',
   'POLICIES',
   'TEAM',
   'PAYROLL',
+  'EXPORTS',
   'SETTINGS',
   'API_KEYS',
   'AUDIT_LOGS',

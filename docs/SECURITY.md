@@ -174,9 +174,9 @@ handler runs; routes also re-check identity themselves (defense in depth).
 | `/api/alerts/acknowledge` | PUT | None | |
 | `/api/alerts/history` | GET | None | |
 | `/api/alerts/check` | POST | None | Runs the alert rule engine; fires `alert.triggered` webhooks |
-| `/api/export/csv` | GET | None | |
-| `/api/export/pdf` | GET | None | |
-| `/api/export/schedule` | GET, POST, DELETE | None | Stores config only — no runner executes scheduled exports yet |
+| `/api/export/csv` | GET | Session (EXPORTS create) | Includes the employees report (personal data) |
+| `/api/export/pdf` | GET | Session (EXPORTS create) | |
+| `/api/export/schedule` | GET, POST, DELETE | Session (EXPORTS view / create / delete) | Stores config only — no runner executes scheduled exports yet |
 | `/api/swagger` | GET | None | Serves the OpenAPI spec |
 | `/api/keys` | GET, POST, DELETE | **Bearer JWT (any role)** | 401 without a valid token |
 | `/api/admin/settings` | GET, PATCH | **Bearer JWT, role: admin** | 401 without a token, 403 for a non-admin token |

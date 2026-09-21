@@ -1,7 +1,10 @@
 import {
   Banknote,
+  Bot,
   Briefcase,
+  Download,
   FileText,
+  Home,
   KeyRound,
   LayoutDashboard,
   LibraryBig,
@@ -21,7 +24,10 @@ export interface NavItem {
 }
 
 const PAGE_ICONS: Record<PageKey, LucideIcon> = {
+  HOME: Home,
   CATALOG: LibraryBig,
+  AI_ASSISTANT: Bot,
+  EXPORTS: Download,
   DASHBOARD: LayoutDashboard,
   RECRUITMENT: Briefcase,
   POLICIES: FileText,
@@ -41,22 +47,23 @@ export const NAV_ITEMS: Record<PageKey, NavItem> = Object.fromEntries(
 ) as Record<PageKey, NavItem>;
 
 // href -> label for the header breadcrumbs, including pages that are reached
-// from the Home hub rather than from the sidebar.
+// from the Catalog rather than from the sidebar.
 export const NAV_LABELS: Record<string, string> = {
   ...Object.fromEntries(Object.values(NAV_ITEMS).map((item) => [item.href, item.label])),
-  "/dashboard/ai-assistant": "AI Assistant",
   "/dashboard/health": "Health",
   "/dashboard/alerts": "Alerts",
   "/dashboard/integrations": "Integrations",
-  "/dashboard/exports": "Exports",
   "/insights": "AI Insights",
   "/api-docs": "API Docs",
   "/error/unauthorized": "Access denied",
 };
 
+// "/" would prefix every path, and /dashboard/* are other tools.
+const EXACT_HREFS = [PAGE_ROUTES.HOME, PAGE_ROUTES.DASHBOARD];
+
 /** The sidebar entry whose href is the longest prefix of `pathname`. */
 export function findActiveHref(pathname: string, items: NavItem[]): string | undefined {
   return items
-    .filter(({ href }) => (href === PAGE_ROUTES.DASHBOARD ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)))
+    .filter(({ href }) => (EXACT_HREFS.includes(href) ? pathname === href : pathname === href || pathname.startsWith(`${href}/`)))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 }

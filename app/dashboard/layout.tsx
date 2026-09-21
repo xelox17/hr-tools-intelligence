@@ -30,8 +30,8 @@ function RefreshIndicator() {
   );
 }
 
-// These pages bring their own heading; the ops-dashboard header would be misleading there.
-const ROUTES_WITHOUT_HEADER = ["/dashboard", "/dashboard/ai-assistant"];
+// The role dashboard brings its own heading; the ops-dashboard header would be misleading there.
+const ROUTES_WITHOUT_HEADER = ["/dashboard"];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

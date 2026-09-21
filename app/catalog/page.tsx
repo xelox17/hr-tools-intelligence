@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Activity, Bell, Bot, Code2, Download, Plug, Sparkles } from "lucide-react";
+import { Activity, Bell, Code2, Plug, Sparkles } from "lucide-react";
 import { AccessGate } from "@/components/auth/AccessGate";
 import { CatalogView } from "@/components/catalog-view";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,15 +23,13 @@ function CatalogSkeleton() {
   );
 }
 
-// Open to every signed-in role. These spaces are not role-restricted either, so they are
-// reached from here rather than crowding the sidebar.
+// Open to every signed-in role and not role-restricted either, so they are reached from
+// here rather than crowding the sidebar.
 const OTHER_SPACES = [
   { href: "/insights", label: "AI Insights", icon: Sparkles },
-  { href: "/dashboard/ai-assistant", label: "AI Assistant", icon: Bot },
   { href: "/dashboard/health", label: "Health", icon: Activity },
   { href: "/dashboard/alerts", label: "Alerts", icon: Bell },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
-  { href: "/dashboard/exports", label: "Exports", icon: Download },
   { href: "/api-docs", label: "API Docs", icon: Code2 },
 ];
 

@@ -5,8 +5,22 @@ type RolePermissions = Partial<Record<PermissionAction, boolean>>;
 type PermissionMatrix = Record<PageKey, Record<UserRole, RolePermissions>>;
 
 export const PERMISSIONS: PermissionMatrix = {
-  // The tools hub: open to every role, no restriction and nothing to edit.
+  // Universal pages: open to every role, no restriction and nothing to edit.
+  HOME: {
+    ADMIN: { view: true },
+    RH_MANAGER: { view: true },
+    RECRUITER: { view: true },
+    MANAGER: { view: true },
+    EMPLOYEE: { view: true },
+  },
   CATALOG: {
+    ADMIN: { view: true },
+    RH_MANAGER: { view: true },
+    RECRUITER: { view: true },
+    MANAGER: { view: true },
+    EMPLOYEE: { view: true },
+  },
+  AI_ASSISTANT: {
     ADMIN: { view: true },
     RH_MANAGER: { view: true },
     RECRUITER: { view: true },
@@ -48,6 +62,14 @@ export const PERMISSIONS: PermissionMatrix = {
     MANAGER: { view: true, viewOwnTeamOnly: true, edit: false, approve: false },
     EMPLOYEE: { view: true, viewOwnOnly: true, edit: false, approve: false },
   },
+  // create = generate/download an export or add a schedule; edit = change one; delete = remove a schedule.
+  EXPORTS: {
+    ADMIN: { view: true, create: true, edit: true, delete: true },
+    RH_MANAGER: { view: true, create: true, edit: true, delete: false },
+    RECRUITER: { view: true, create: true, edit: false, delete: false },
+    MANAGER: { view: false },
+    EMPLOYEE: { view: false },
+  },
   SETTINGS: {
     ADMIN: { view: true, edit: true },
     RH_MANAGER: { view: false },
@@ -88,7 +110,10 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
 };
 
 export const PAGE_LABELS: Record<PageKey, string> = {
+  HOME: 'Home',
   CATALOG: 'Catalog',
+  AI_ASSISTANT: 'AI Assistant',
+  EXPORTS: 'Exports',
   DASHBOARD: 'Dashboard',
   RECRUITMENT: 'Recruitment',
   POLICIES: 'Policies',
@@ -101,7 +126,10 @@ export const PAGE_LABELS: Record<PageKey, string> = {
 
 /** URL of each protected page (used by navigation, redirects and the proxy gate). */
 export const PAGE_ROUTES: Record<PageKey, string> = {
+  HOME: '/',
   CATALOG: '/catalog',
+  AI_ASSISTANT: '/ai-assistant',
+  EXPORTS: '/exports',
   DASHBOARD: '/dashboard',
   RECRUITMENT: '/recruitment',
   POLICIES: '/policies',
@@ -111,6 +139,9 @@ export const PAGE_ROUTES: Record<PageKey, string> = {
   API_KEYS: '/api-keys',
   AUDIT_LOGS: '/audit-logs',
 };
+
+/** Pages every signed-in role can open (no RBAC). The sidebar lists them first, above a separator. */
+export const UNIVERSAL_PAGES: readonly PageKey[] = ['HOME', 'CATALOG', 'AI_ASSISTANT'];
 
 export function isUserRole(value: unknown): value is UserRole {
   return typeof value === 'string' && (USER_ROLES as readonly string[]).includes(value);

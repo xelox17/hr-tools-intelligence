@@ -8,6 +8,9 @@ import { GET as getPayroll } from '@/app/api/payroll/route';
 import { GET as getTeam } from '@/app/api/team/route';
 import { GET as getRecruitment } from '@/app/api/recruitment/route';
 import { GET as getAccessLog } from '@/app/api/audit/access-log/route';
+import { GET as exportCsv } from '@/app/api/export/csv/route';
+import { GET as exportPdf } from '@/app/api/export/pdf/route';
+import { DELETE as deleteSchedule, GET as listSchedules } from '@/app/api/export/schedule/route';
 import { signJwt } from '@/middleware/auth';
 import { DEMO_USERS, getDemoUserByRole } from '../demo-users';
 import { checkPermission, clearAccessEvents, getRecentAccessEvents } from '../middleware';
@@ -16,12 +19,27 @@ import { PERMISSIONS, canAccess, getAccessiblePages, getPermissionLevel } from '
 import { SESSION_COOKIE, resolveSessionUser, signSession, verifySession } from '../session';
 import { PAGE_KEYS, USER_ROLES, type PageKey, type UserRole } from '../types';
 
+// The report generators would query the database; the permission checks under test run before that.
+jest.mock('@/lib/export/csv-generator', () => ({
+  CSVGenerator: class {
+    private stream() {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.mock factories must require lazily
+      return require('node:stream').Readable.from(['name\nSAP SuccessFactors']);
+    }
+    async generateToolsReport() { return this.stream(); }
+    async generateEmployeesReport() { return this.stream(); }
+    async generateAlertsReport() { return this.stream(); }
+  },
+}));
+
+const UNIVERSAL: PageKey[] = ['HOME', 'CATALOG', 'AI_ASSISTANT'];
+
 const EXPECTED_PAGES: Record<UserRole, PageKey[]> = {
-  ADMIN: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL', 'SETTINGS', 'API_KEYS', 'AUDIT_LOGS'],
-  RH_MANAGER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
-  RECRUITER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES'],
-  MANAGER: ['CATALOG', 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
-  EMPLOYEE: ['CATALOG', 'DASHBOARD', 'POLICIES', 'TEAM', 'PAYROLL'],
+  ADMIN: [...UNIVERSAL, 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL', 'EXPORTS', 'SETTINGS', 'API_KEYS', 'AUDIT_LOGS'],
+  RH_MANAGER: [...UNIVERSAL, 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL', 'EXPORTS'],
+  RECRUITER: [...UNIVERSAL, 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'EXPORTS'],
+  MANAGER: [...UNIVERSAL, 'DASHBOARD', 'RECRUITMENT', 'POLICIES', 'TEAM', 'PAYROLL'],
+  EMPLOYEE: [...UNIVERSAL, 'DASHBOARD', 'POLICIES', 'TEAM', 'PAYROLL'],
 };
 
 async function cookieFor(role: UserRole): Promise<string> {
@@ -53,10 +71,30 @@ describe('permission matrix', () => {
     expect(getAccessiblePages(role)).toEqual(EXPECTED_PAGES[role]);
   });
 
-  it.each(USER_ROLES)('%s can always open the Catalog, first in the list, with no restriction', (role) => {
-    expect(getAccessiblePages(role)[0]).toBe('CATALOG');
-    expect(canAccess(role, 'CATALOG', 'view')).toBe(true);
-    expect(decidePageAccess('/catalog', role).decision).toBe('allow');
+  it.each(USER_ROLES)('%s always gets Home, Catalog and AI Assistant, first in the list', (role) => {
+    expect(getAccessiblePages(role).slice(0, 3)).toEqual(UNIVERSAL);
+    for (const page of UNIVERSAL) expect(canAccess(role, page, 'view')).toBe(true);
+    for (const path of ['/', '/catalog', '/ai-assistant']) expect(decidePageAccess(path, role).decision).toBe('allow');
+  });
+
+  it('has the specified sidebar sizes per role', () => {
+    expect(USER_ROLES.map((role) => [role, getAccessiblePages(role).length])).toEqual([
+      ['ADMIN', 12],
+      ['RH_MANAGER', 9],
+      ['RECRUITER', 7],
+      ['MANAGER', 8],
+      ['EMPLOYEE', 7],
+    ]);
+  });
+
+  it('gives Exports per-role permissions', () => {
+    expect(canAccess('ADMIN', 'EXPORTS', 'delete')).toBe(true);
+    expect(canAccess('RH_MANAGER', 'EXPORTS', 'edit')).toBe(true);
+    expect(canAccess('RH_MANAGER', 'EXPORTS', 'delete')).toBe(false);
+    expect(canAccess('RECRUITER', 'EXPORTS', 'create')).toBe(true);
+    expect(canAccess('RECRUITER', 'EXPORTS', 'edit')).toBe(false);
+    expect(canAccess('MANAGER', 'EXPORTS', 'view')).toBe(false);
+    expect(canAccess('EMPLOYEE', 'EXPORTS', 'view')).toBe(false);
   });
 
   it('gives each role the specified capabilities', () => {
@@ -162,6 +200,14 @@ describe('page gate decisions', () => {
     ['/error/unauthorized', 'RECRUITER', 'allow'],
     ['/', 'EMPLOYEE', 'allow'],
     ['/catalog', null, 'login'],
+    ['/ai-assistant', null, 'login'],
+    ['/home', null, 'login'],
+    ['/exports', null, 'login'],
+    ['/exports', 'RECRUITER', 'allow'],
+    ['/exports', 'ADMIN', 'allow'],
+    ['/exports', 'MANAGER', 'unauthorized'],
+    ['/exports/', 'EMPLOYEE', 'unauthorized'],
+    ['/%65xports', 'EMPLOYEE', 'unauthorized'],
     ['/payroll', null, 'login'],
     ['/', null, 'login'],
     ['/login', null, 'allow'],
@@ -275,6 +321,30 @@ describe('session-protected API routes', () => {
     expect(await (await post('ADMIN', { page: 'SETTINGS', action: 'edit' })).json()).toEqual({ allowed: true });
     expect((await post('ADMIN', { page: 'NOPE', action: 'view' })).status).toBe(400);
     expect((await post('ADMIN', { page: 'PAYROLL', action: 'view\nFAKE' })).status).toBe(400);
+  });
+});
+
+describe('export API routes', () => {
+  const status = async (handler: (r: NextRequest) => Promise<Response>, url: string, role?: UserRole, init = {}) =>
+    (await handler(await request(url, role, init))).status;
+
+  it('refuse anonymous callers and roles without the Exports permission', async () => {
+    for (const handler of [exportCsv, exportPdf]) {
+      expect(await status(handler, '/api/export/csv?type=employees')).toBe(401);
+      expect(await status(handler, '/api/export/csv?type=employees', 'EMPLOYEE')).toBe(403);
+      expect(await status(handler, '/api/export/csv?type=employees', 'MANAGER')).toBe(403);
+    }
+    expect(await status(listSchedules, '/api/export/schedule')).toBe(401);
+    expect(await status(listSchedules, '/api/export/schedule', 'MANAGER')).toBe(403);
+    expect(getRecentAccessEvents().some((e) => e.userRole === 'EMPLOYEE' && e.attemptedPage === 'EXPORTS')).toBe(true);
+  });
+
+  it('let Recruiter generate an export but not delete a schedule', async () => {
+    const response = await exportCsv(await request('/api/export/csv?type=tools', 'RECRUITER'));
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('SAP SuccessFactors');
+    expect(await status(deleteSchedule, '/api/export/schedule?id=1', 'RECRUITER', { method: 'DELETE' })).toBe(403);
+    expect(await status(deleteSchedule, '/api/export/schedule?id=1', 'RH_MANAGER', { method: 'DELETE' })).toBe(403);
   });
 });
 

@@ -25,10 +25,14 @@ export function normalizePath(pathname: string): string | null {
   }
 }
 
-/** The protected page a path belongs to, if any. `/dashboard` is exact: its sub-routes are separate tools. */
+// Home ("/") and Dashboard match exactly: "/" would otherwise prefix everything, and the
+// sub-routes of /dashboard (health, alerts…) are separate tools.
+const EXACT_MATCH_ONLY: readonly PageKey[] = ['HOME', 'DASHBOARD'];
+
+/** The protected page a path belongs to, if any. */
 export function pageForPath(normalizedPath: string): PageKey | null {
   for (const [page, route] of Object.entries(PAGE_ROUTES) as [PageKey, string][]) {
-    if (page === 'DASHBOARD' ? normalizedPath === route : normalizedPath === route || normalizedPath.startsWith(`${route}/`)) {
+    if (EXACT_MATCH_ONLY.includes(page) ? normalizedPath === route : normalizedPath === route || normalizedPath.startsWith(`${route}/`)) {
       return page;
     }
   }
