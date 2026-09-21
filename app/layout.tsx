@@ -41,7 +41,7 @@ export default async function RootLayout({
       className={`${fontSans.variable} ${fontHeading.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="flex h-screen flex-col overflow-hidden bg-background text-foreground font-sans md:flex-row">
+      <body className="flex h-dvh flex-col overflow-hidden bg-background text-foreground font-sans lg:flex-row">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthProvider user={user}>
             <AppShell>{children}</AppShell>

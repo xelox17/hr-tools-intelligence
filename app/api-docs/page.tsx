@@ -33,7 +33,8 @@ export default function ApiDocsPage() {
       <Script src={SWAGGER_UI_CDN.bundleJs} strategy="afterInteractive" onLoad={() => setBundleLoaded(true)} />
       <Script src={SWAGGER_UI_CDN.presetJs} strategy="afterInteractive" onLoad={() => setPresetLoaded(true)} />
 
-      <div className="-mx-4 -my-6 flex min-h-[calc(100vh-3rem)] flex-col sm:-mx-6 md:-mx-8 md:-my-8">
+      {/* Full-bleed: cancels the padding of the app shell (px-4 sm:px-6 lg:px-8, pt-5 sm:pt-6 lg:pt-8, pb-24). */}
+      <div className="-mx-4 -mt-5 -mb-24 flex min-h-[calc(100dvh-3.5rem)] flex-col sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8">
         <header className="flex flex-col gap-2 border-b border-border bg-card px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-8">
           <div>
             <h1 className="font-heading text-xl font-bold text-foreground">Lesaffre HR Backend API</h1>

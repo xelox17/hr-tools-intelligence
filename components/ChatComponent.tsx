@@ -105,7 +105,7 @@ export function ChatComponent({ className }: { className?: string }) {
   const lastMessageId = messages[messages.length - 1]?.id;
 
   return (
-    <Card className={cn("h-[34rem] max-h-[75vh] rounded-2xl", className)}>
+    <Card className={cn("h-[34rem] max-h-[75dvh] rounded-2xl", className)}>
       <CardContent className="flex min-h-0 flex-1 flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">

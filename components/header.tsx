@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AlertOctagon, AlertTriangle, Bell, ChevronRight, Info, Moon, ShieldCheck, ShieldOff, Sun } from "lucide-react";
+import { AlertOctagon, AlertTriangle, Bell, ChevronRight, Info, Menu, Moon, ShieldCheck, ShieldOff, Sun } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { Badge } from "@/components/ui/badge";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -152,19 +153,39 @@ function AdminStatus() {
       title={hasToken ? "Admin token set" : "No admin token — click to add one"}
     >
       {hasToken ? <ShieldCheck className="h-3.5 w-3.5 text-accent" /> : <ShieldOff className="h-3.5 w-3.5" />}
-      <span className="hidden sm:inline">{hasToken ? "Admin" : "Not connected"}</span>
-      {hasToken && <Badge variant="success" size="sm" className="hidden sm:inline-flex">connected</Badge>}
+      <span className="hidden xl:inline">{hasToken ? "Admin" : "Not connected"}</span>
+      {hasToken && <Badge variant="success" size="sm" className="hidden 2xl:inline-flex">connected</Badge>}
     </Link>
   );
 }
 
-export function Header() {
+/**
+ * Single top bar. Below lg (phones and tablets) it also carries the menu button and
+ * the logo, because the sidebar becomes a drawer. The breadcrumb needs room, so it
+ * only appears from sm up (every page has its own heading anyway).
+ */
+export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6 md:px-8">
-      <div className="min-w-0 flex-1">
-        <Breadcrumbs />
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/80 px-3 backdrop-blur-sm sm:gap-3 sm:px-6 lg:px-8">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
+          <button
+            type="button"
+            onClick={onOpenMenu}
+            aria-label="Open menu"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <Link href="/" aria-label="Home" className="rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+            <BrandLogo className="w-16" priority />
+          </Link>
+        </div>
+        <div className="hidden min-w-0 flex-1 sm:block">
+          <Breadcrumbs />
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
         <AdminStatus />
         <NotificationBell />
         <ThemeToggle />

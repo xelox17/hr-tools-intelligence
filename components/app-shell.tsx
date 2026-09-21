@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FloatingChatWidget } from "@/components/FloatingChatWidget";
@@ -19,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isLoginRoute = pathname === LOGIN_ROUTE;
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!user && !isLoginRoute) router.replace(LOGIN_ROUTE);
@@ -32,11 +33,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <Sidebar />
+      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <Header />
+        <Header onOpenMenu={() => setMenuOpen(true)} />
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:px-8 md:py-8">{children}</div>
+          {/* Bottom padding keeps the last content clear of the floating chat button. */}
+          <div className="mx-auto max-w-7xl px-4 pt-5 pb-24 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">{children}</div>
         </main>
       </div>
       <FloatingChatWidget />

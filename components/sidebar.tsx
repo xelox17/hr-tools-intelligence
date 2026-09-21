@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { RoleBasedNavigation } from "@/components/auth/RoleBasedNavigation";
 import { useAuth } from "@/lib/auth/hooks";
@@ -36,50 +36,47 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   return <RoleBasedNavigation userRole={role} onNavigate={onNavigate} />;
 }
 
-export function Sidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+/**
+ * Fixed sidebar from lg (1024px) up. Below that it is a slide-in drawer opened from the
+ * menu button in the header, so phones and tablets keep the full width for content.
+ */
+export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
 
   return (
     <>
-      {/* Mobile top bar */}
-      <header className="flex shrink-0 items-center justify-between border-b border-sidebar-border bg-sidebar px-4 py-2 md:hidden">
-        <Link href="/" aria-label="Home">
-          <BrandLogo className="w-24" priority />
-        </Link>
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground hover:bg-sidebar-accent"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-      </header>
-
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-72 flex-col bg-sidebar text-sidebar-foreground">
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
+          <aside
+            aria-label="Menu"
+            className="relative flex h-full w-72 max-w-[85vw] flex-col bg-sidebar text-sidebar-foreground shadow-xl"
+          >
             <div className="flex items-center justify-between px-6 py-6">
-              <Logo onNavigate={() => setMobileOpen(false)} />
+              <Logo onNavigate={onClose} />
               <button
                 type="button"
-                onClick={() => setMobileOpen(false)}
+                onClick={onClose}
                 aria-label="Close menu"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <Navigation onNavigate={() => setMobileOpen(false)} />
+            <Navigation onNavigate={onClose} />
             <Footer />
           </aside>
         </div>
       )}
 
-      {/* Desktop sidebar */}
-      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
         <div className="px-6 py-6">
           <Logo priority />
         </div>
