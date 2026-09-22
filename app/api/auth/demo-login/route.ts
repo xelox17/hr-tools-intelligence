@@ -2,9 +2,15 @@
  * POST /api/auth/demo-login — body { userId }.
  *
  * DEMO ONLY: signs the visitor in as one of the demo accounts, with no
- * password, and sets the signed httpOnly session cookie. In production this
- * route is replaced by the SSO callback that issues the same session token.
- * Set DEMO_AUTH_ENABLED=false to switch it off.
+ * password. In production this route is replaced by the SSO callback that
+ * issues the same session token. Set DEMO_AUTH_ENABLED=false to switch it off.
+ *
+ * Returns the token two ways: as the httpOnly cookie (for the same-origin
+ * Next.js app — see lib/auth/session.ts) AND in the JSON body (for the
+ * Power Apps code app, hosted on a different origin: the Power Apps player's
+ * origin can't reliably receive a SameSite cookie set by this API, so that
+ * client stores this token itself and sends it back as
+ * `Authorization: Bearer <token>` — getSessionUser() already accepts either).
  */
 
 import type { NextRequest } from 'next/server';
@@ -40,7 +46,7 @@ export async function POST(request: NextRequest) {
     return errorResponse('SERVICE_UNAVAILABLE', 'Sign-in is temporarily unavailable.', null, 503);
   }
 
-  const response = NextResponse.json({ user });
+  const response = NextResponse.json({ user, token });
   response.cookies.set(SESSION_COOKIE, token, { ...SESSION_COOKIE_OPTIONS, secure: process.env.NODE_ENV === 'production' });
   return response;
 }
