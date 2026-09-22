@@ -218,10 +218,22 @@
  * `animate-fade-in` / `animate-slide-down` / `animate-shimmer` utilities.
  * Kept short (≤300ms) and non-positional (opacity/small translate only) per
  * the Lesaffre design brief: discreet, not distracting.
+ *
+ * No `both`/`forwards` fill-mode: none of these have an animation-delay (so
+ * there's nothing for `backwards` to cover), and every element that uses them
+ * already rests at the end-keyframe values (opacity 1, transform none) once
+ * the animation stops — nothing else sets opacity/transform on them. A fill
+ * mode would keep `animation-fill-mode` retaining those values, and per the
+ * CSS stacking spec an element whose animation still "applies" that way keeps
+ * forming its own stacking context after the animation is long done — which
+ * is exactly what let page content float above the header's dropdowns
+ * (z-50 inside a stray stacking context no longer beats z-30 on <header>
+ * itself; see components/header.tsx). Without a fill mode, the animation's
+ * influence — and the stacking context it created — ends when it does.
  */
 @theme {
-  --animate-fade-in: fade-in 300ms ease-out both;
-  --animate-slide-down: slide-down 200ms ease-out both;
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-slide-down: slide-down 200ms ease-out;
   --animate-shimmer: shimmer 2s linear infinite;
 }
 

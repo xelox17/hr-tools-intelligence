@@ -163,10 +163,17 @@ function AdminStatus() {
  * Single top bar. Below lg (phones and tablets) it also carries the menu button and
  * the logo, because the sidebar becomes a drawer. The breadcrumb needs room, so it
  * only appears from sm up (every page has its own heading anyway).
+ *
+ * `relative z-30`: an explicit stacking context, so the notification/profile
+ * dropdowns (both z-50 *within* it) always paint above page content — any
+ * animated/transformed element in <main> (a card's hover lift, the page
+ * fade-in) can otherwise end up promoted to its own layer and land on top of
+ * a z-50 descendant that has no stacking context of its own at the header
+ * level. Below the mobile drawer's z-50 so it can still cover the header.
  */
 export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/80 px-3 backdrop-blur-sm sm:gap-3 sm:px-6 lg:px-8">
+    <header className="relative z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/80 px-3 backdrop-blur-sm sm:gap-3 sm:px-6 lg:px-8">
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
           <button
