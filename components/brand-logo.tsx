@@ -5,19 +5,24 @@ import { cn } from "@/lib/utils";
 const { logo } = LESAFFRE_THEME;
 
 /**
- * The Lesaffre logo file is a square PNG on a white background with generous
- * padding. It is cropped to a 3:2 frame (the mark and wordmark sit in the
- * vertical middle) and kept on white in dark mode, so it never needs a
- * transparent variant. The white tile gets the same ring + shadow as a Card
- * (see components/ui/card.tsx), so on a dark sidebar it reads as a framed
- * chip rather than a raw white rectangle pasted on the background. Size it
- * with `className` (e.g. "w-28").
+ * The source PNG already has a real transparent background (verified: its
+ * alpha channel varies 0–255, only the mark + "LESAFFRE" wordmark are
+ * opaque) — the white behind it in light mode comes entirely from the
+ * `bg-white` tile below, not from the file. So:
+ *
+ * - Light mode: the tile is opaque white with a ring/shadow, framing the
+ *   logo as a chip — unchanged from before.
+ * - Dark mode: the tile's background/ring/shadow are switched off, so the
+ *   sidebar's own dark surface shows through the logo's real transparency.
+ *
+ * Same file, same crop, same colours, same size in both modes — only the
+ * tile chrome around it changes. Size with `className` (e.g. "w-28").
  */
 export function BrandLogo({ className, priority = false }: { className?: string; priority?: boolean }) {
   return (
     <div
       className={cn(
-        "relative aspect-[3/2] w-28 shrink-0 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-foreground/10 dark:ring-white/15",
+        "relative aspect-[3/2] w-28 shrink-0 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-foreground/10 dark:bg-transparent dark:shadow-none dark:ring-0",
         className
       )}
     >
