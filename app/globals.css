@@ -95,37 +95,41 @@
 }
 
 .dark {
-  --background: #03172c;
-  --foreground: #ffffff;
-  --card: #072844;
-  --card-foreground: #ffffff;
-  --popover: #072844;
-  --popover-foreground: #ffffff;
-  --primary: #4da3ff;
+  /* One dark-blue-black family, four elevation steps: background < card <
+     muted/secondary (hover) < border. Sidebar and its active item resolve to
+     the same card/primary tokens as the rest of the app — see the comment
+     above DARK_THEME in lib/config/branding.ts for why. */
+  --background: #0f1419;
+  --foreground: #e2e8f0;
+  --card: #1a202c;
+  --card-foreground: #e2e8f0;
+  --popover: #1a202c;
+  --popover-foreground: #e2e8f0;
+  --primary: #3d8bff;
   --primary-foreground: #00182f;
-  --secondary: #0b3560;
-  --secondary-foreground: #ffffff;
-  --muted: #0b3560;
+  --secondary: #232b3d;
+  --secondary-foreground: #e2e8f0;
+  --muted: #232b3d;
   --muted-foreground: #a9bcd6;
   --accent: #00b4d8;
   --accent-foreground: #00243f;
   --destructive: #ff7b72;
-  --border: #134272;
-  --input: #134272;
-  --ring: #4da3ff;
-  --chart-1: #4da3ff;
+  --border: #2d3748;
+  --input: #2d3748;
+  --ring: #3d8bff;
+  --chart-1: #3d8bff;
   --chart-2: #00b4d8;
   --chart-3: #8cc4ff;
   --chart-4: #f0b955;
   --chart-5: #b490e0;
-  --sidebar: #00366b;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #00b4d8;
-  --sidebar-primary-foreground: #00243f;
+  --sidebar: #1a202c;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #3d8bff;
+  --sidebar-primary-foreground: #00182f;
   --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.14);
-  --sidebar-ring: #00b4d8;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #2d3748;
+  --sidebar-ring: #3d8bff;
 }
 
 @layer base {
@@ -145,10 +149,15 @@
     body,
     header,
     aside,
+    nav,
     [data-slot="card"],
+    [data-slot="dialog-content"],
+    .role-badge,
     input,
     textarea,
-    select {
+    select,
+    button,
+    a {
       transition:
         background-color 200ms ease,
         color 200ms ease,
