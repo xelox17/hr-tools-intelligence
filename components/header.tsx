@@ -67,7 +67,7 @@ function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={mounted && isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:-translate-y-px hover:bg-muted hover:text-foreground"
     >
       {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </button>
@@ -96,7 +96,7 @@ function NotificationBell() {
           if (!open) markAllRead();
         }}
         aria-label="Notifications"
-        className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:-translate-y-px hover:bg-muted hover:text-foreground"
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
@@ -106,10 +106,10 @@ function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10">
+        <div className="animate-slide-down absolute right-0 z-50 mt-2 w-80 origin-top-right rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10">
           <div className="flex items-center justify-between px-2 py-1.5">
             <span className="text-sm font-semibold text-foreground">Active alerts</span>
-            <Link href="/dashboard/alerts" className="text-xs text-accent hover:underline" onClick={() => setOpen(false)}>
+            <Link href="/dashboard/alerts" className="text-xs text-accent link-underline" onClick={() => setOpen(false)}>
               View all
             </Link>
           </div>
@@ -147,7 +147,7 @@ function AdminStatus() {
     <Link
       href="/settings"
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted",
+        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-px hover:bg-muted",
         hasToken ? "text-foreground" : "text-muted-foreground"
       )}
       title={hasToken ? "Admin token set" : "No admin token — click to add one"}
@@ -173,7 +173,7 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
             type="button"
             onClick={onOpenMenu}
             aria-label="Open menu"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-all duration-200 hover:-translate-y-px hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
             <Menu className="h-5 w-5" />
           </button>

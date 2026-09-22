@@ -16,7 +16,7 @@ function NavLink({ item, active, onNavigate }: { item: NavItem; active: boolean;
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200",
         active
           ? "bg-sidebar-primary text-sidebar-primary-foreground"
           : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"

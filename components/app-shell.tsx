@@ -37,8 +37,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Header onOpenMenu={() => setMenuOpen(true)} />
         <main className="min-h-0 flex-1 overflow-y-auto">
-          {/* Bottom padding keeps the last content clear of the floating chat button. */}
-          <div className="mx-auto max-w-7xl px-4 pt-5 pb-24 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">{children}</div>
+          {/* Bottom padding keeps the last content clear of the floating chat button. `key`
+              forces a remount on navigation, which restarts the fade-in — a plain CSS
+              animation, not a true crossfade (the old page doesn't fade out: Next's App
+              Router has no built-in hook for that without React's experimental
+              ViewTransition API, which this app doesn't enable — see commit history). */}
+          <div key={pathname} className="animate-fade-in mx-auto max-w-7xl px-4 pt-5 pb-24 sm:px-6 sm:pt-6 lg:px-8 lg:pt-8">
+            {children}
+          </div>
         </main>
       </div>
       <FloatingChatWidget />

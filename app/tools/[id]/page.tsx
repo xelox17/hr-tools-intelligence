@@ -106,7 +106,7 @@ export default async function ToolDetailPage({
                   href={tool.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium break-all text-accent hover:underline"
+                  className="font-medium break-all text-accent link-underline"
                 >
                   {tool.url.replace(/^https?:\/\//, "")}
                 </a>

@@ -111,7 +111,7 @@ export function CatalogView() {
           <button
             type="button"
             onClick={clearFilters}
-            className="inline-flex w-fit items-center gap-1 text-xs font-medium text-accent hover:underline"
+            className="inline-flex w-fit items-center gap-1 text-xs font-medium text-accent link-underline"
           >
             <X className="h-3.5 w-3.5" />
             Clear all filters

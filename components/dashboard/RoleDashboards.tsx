@@ -347,7 +347,7 @@ function EmployeeDashboard({ user }: { user: User }) {
             {({ payslips }) => (
               <>
                 <SimpleList items={payslips.slice(0, 3).map((p) => ({ id: p.id, primary: p.period, secondary: `Net ${formatEuro(p.net)}` }))} />
-                <Link href="/payroll" className="mt-3 inline-block text-sm font-medium text-primary hover:underline">View all payslips</Link>
+                <Link href="/payroll" className="mt-3 inline-block text-sm font-medium text-primary link-underline">View all payslips</Link>
               </>
             )}
           </WithData>

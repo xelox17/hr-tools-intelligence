@@ -211,3 +211,68 @@
     background: color-mix(in srgb, var(--destructive) 6%, transparent);
   }
 }
+
+/*
+ * Motion toolkit. Static durations (they don't change with the theme), so a
+ * plain `@theme` rather than `@theme inline` — this is what generates the
+ * `animate-fade-in` / `animate-slide-down` / `animate-shimmer` utilities.
+ * Kept short (≤300ms) and non-positional (opacity/small translate only) per
+ * the Lesaffre design brief: discreet, not distracting.
+ */
+@theme {
+  --animate-fade-in: fade-in 300ms ease-out both;
+  --animate-slide-down: slide-down 200ms ease-out both;
+  --animate-shimmer: shimmer 2s linear infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-shimmer {
+    animation: none;
+  }
+}
+
+@layer components {
+  /* A text link whose underline eases in on hover/focus instead of snapping
+     on — a thin background line (matches text colour) animated by width,
+     since `text-decoration` itself doesn't transition smoothly everywhere. */
+  .link-underline {
+    background-image: linear-gradient(currentcolor, currentcolor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 200ms ease-out;
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+}

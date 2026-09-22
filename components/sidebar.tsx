@@ -54,10 +54,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     <>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
+          <div className="animate-fade-in absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
           <aside
             aria-label="Menu"
-            className="relative flex h-full w-72 max-w-[85vw] flex-col bg-sidebar text-sidebar-foreground shadow-xl"
+            className="animate-fade-in relative flex h-full w-72 max-w-[85vw] flex-col bg-sidebar text-sidebar-foreground shadow-xl"
           >
             <div className="flex items-center justify-between px-6 py-6">
               <Logo onNavigate={onClose} />
@@ -65,7 +65,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 type="button"
                 onClick={onClose}
                 aria-label="Close menu"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-all duration-200 hover:-translate-y-px hover:bg-sidebar-accent"
               >
                 <X className="h-4 w-4" />
               </button>

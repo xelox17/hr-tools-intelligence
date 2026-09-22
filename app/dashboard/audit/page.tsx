@@ -152,7 +152,7 @@ export default function AuditPage() {
             <button
               type="button"
               onClick={() => setExpandedId(expanded ? null : row.id)}
-              className="w-fit text-xs font-medium text-accent hover:underline"
+              className="w-fit text-xs font-medium text-accent link-underline"
             >
               {expanded ? "Hide diff" : `View diff (${changedKeys.length} field${changedKeys.length === 1 ? "" : "s"} changed)`}
             </button>

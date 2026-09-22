@@ -51,7 +51,7 @@ export function UserProfileDropdown() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2.5 rounded-lg p-1 transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        className="flex items-center gap-2.5 rounded-lg p-1 transition-all duration-200 hover:-translate-y-px hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       >
         <span
           aria-hidden
@@ -70,7 +70,7 @@ export function UserProfileDropdown() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-xl bg-popover p-3 text-popover-foreground shadow-lg ring-1 ring-foreground/10"
+          className="animate-slide-down absolute right-0 z-50 mt-2 flex w-80 max-w-[calc(100vw-2rem)] origin-top-right flex-col gap-3 rounded-xl bg-popover p-3 text-popover-foreground shadow-lg ring-1 ring-foreground/10"
         >
           <section aria-label="Profile" className="flex flex-col gap-0.5">
             <div className="flex items-center justify-between gap-2">
