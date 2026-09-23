@@ -1,5 +1,11 @@
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 import { cn } from "@/lib/utils";
+// Imported (not a "/lesaffre-logo.png" string from public/) so Vite bundles
+// it and emits a URL relative to wherever the app is actually served —
+// Power Apps hosts the published app under a per-tenant subpath, not the
+// domain root, so a root-absolute path 404s there even though it works
+// fine locally (served from "/").
+import logoSrc from "@/assets/lesaffre-logo.png";
 
 const { logo } = LESAFFRE_THEME;
 
@@ -20,7 +26,7 @@ export function BrandLogo({ className, priority = false }: { className?: string;
       )}
     >
       <img
-        src={logo.src}
+        src={logoSrc}
         alt={logo.alt}
         width={logo.width}
         height={logo.height}
