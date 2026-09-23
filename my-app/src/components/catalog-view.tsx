@@ -1,108 +1,110 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
-import { Download, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ToolCard } from "@/components/tool-card";
-import { downloadCSV, toolsToCSV } from "@/lib/csv";
-import {
-  filterTools,
-  searchTools,
-  tools,
-  uniqueCategories,
-  uniqueCountries,
-} from "@/lib/analytics";
-import type { ToolScope } from "@/lib/types";
+import { ApplicationCard } from "@/components/application-card";
+import { applications, categories, hrSubcategories, type Application } from "@/data/applications";
 import { cn } from "@/lib/utils";
 
-const SCOPES: ToolScope[] = ["Corporate", "Local"];
+const HR_CATEGORY = "Human Resources";
+type Status = NonNullable<Application["status"]>;
+const STATUSES: Status[] = ["Active", "Planned", "Deprecated"];
 
-function toggleValue<T>(list: T[], value: T): T[] {
+function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
+function matches(app: Application, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return [app.title, app.description, app.vendor, app.targetAudience]
+    .filter((field): field is string => Boolean(field))
+    .some((field) => field.toLowerCase().includes(q));
+}
+
 export function CatalogView() {
-  const [searchParams] = useSearchParams();
-  const [query, setQuery] = useState(searchParams.get("q") ?? "");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [scopes, setScopes] = useState<ToolScope[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<string[]>([]);
+  const [scopes, setScopes] = useState<string[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
+
+  const isHr = category === HR_CATEGORY;
+
+  // Scopes only make sense within HR (it's the only category that sets them).
+  const availableScopes = useMemo(
+    () => Array.from(new Set(applications.filter((a) => a.category === HR_CATEGORY && a.scope).map((a) => a.scope as string))),
+    []
+  );
 
   const filtered = useMemo(() => {
-    const base = filterTools(tools, { categories, scopes, countries });
-    return searchTools(base, query);
-  }, [query, categories, scopes, countries]);
+    return applications.filter((app) => {
+      if (category && app.category !== category) return false;
+      if (isHr && subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
+      if (isHr && scopes.length && !scopes.includes(app.scope ?? "")) return false;
+      if (statuses.length && !statuses.includes(app.status ?? "Active")) return false;
+      return matches(app, query);
+    });
+  }, [query, category, subcategories, scopes, statuses, isHr]);
 
-  const hasActiveFilters =
-    query.trim().length > 0 ||
-    categories.length > 0 ||
-    scopes.length > 0 ||
-    countries.length > 0;
+  const hasActiveFilters = query.trim().length > 0 || category !== null || subcategories.length > 0 || scopes.length > 0 || statuses.length > 0;
 
   function clearFilters() {
     setQuery("");
-    setCategories([]);
+    setCategory(null);
+    setSubcategories([]);
     setScopes([]);
-    setCountries([]);
+    setStatuses([]);
   }
 
-  function handleExport() {
-    if (filtered.length === 0) {
-      toast.error("No tools to export — adjust your filters first.");
-      return;
-    }
-    const csv = toolsToCSV(filtered);
-    downloadCSV(`hr-tools-catalog-${filtered.length}.csv`, csv);
-    toast.success(`Exported ${filtered.length} tool${filtered.length > 1 ? "s" : ""} to CSV.`);
+  function selectCategory(next: string | null) {
+    setCategory(next);
+    setSubcategories([]);
+    setScopes([]);
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">Tools catalog</h1>
-          <p className="text-sm text-muted-foreground">
-            Search and filter the group's HR tools by category, scope and country.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search a tool..."
-              className="h-10 border-border bg-card pl-9"
-            />
-          </div>
-          <Button onClick={handleExport} className="gap-2 self-start sm:self-auto">
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
+      <header className="flex flex-col gap-1">
+        <h1 className="font-heading text-2xl font-bold text-foreground">Lesaffre Applications Hub</h1>
+        <p className="text-sm text-muted-foreground">Discover and access all Lesaffre business applications.</p>
       </header>
+
+      <div className="relative w-full sm:max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search title, description, vendor, audience..."
+          className="h-10 border-border bg-card pl-9"
+        />
+      </div>
 
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
         <FilterGroup
-          label="Scope"
-          options={SCOPES}
-          selected={scopes}
-          onToggle={(value) => setScopes((prev) => toggleValue(prev, value))}
-        />
-        <FilterGroup
           label="Category"
-          options={uniqueCategories()}
-          selected={categories}
-          onToggle={(value) => setCategories((prev) => toggleValue(prev, value))}
+          options={categories}
+          selected={category ? [category] : []}
+          onToggle={(value) => selectCategory(category === value ? null : value)}
         />
+
+        {isHr && (
+          <>
+            <FilterGroup
+              label="HR sub-category"
+              options={hrSubcategories}
+              selected={subcategories}
+              onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
+            />
+            <FilterGroup label="Scope" options={availableScopes} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
+          </>
+        )}
+
         <FilterGroup
-          label="Country"
-          options={uniqueCountries()}
-          selected={countries}
-          onToggle={(value) => setCountries((prev) => toggleValue(prev, value))}
+          label="Status"
+          options={STATUSES}
+          selected={statuses}
+          onToggle={(value) => setStatuses((prev) => toggle(prev, value as Status))}
         />
 
         {hasActiveFilters && (
@@ -118,49 +120,42 @@ export function CatalogView() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of{" "}
-        {tools.length} tools
+        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {applications.length} applications
       </p>
 
       {filtered.length > 0 ? (
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}
-        >
-          {filtered.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((app) => (
+            <li key={app.id}>
+              <ApplicationCard app={app} />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="font-heading text-base font-semibold text-foreground">
-            No tools match your filters
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Try adjusting your search or clearing filters.
-          </p>
+          <p className="font-heading text-base font-semibold text-foreground">No applications found</p>
+          <p className="text-sm text-muted-foreground">Try adjusting your filters.</p>
         </div>
       )}
     </div>
   );
 }
 
-function FilterGroup<T extends string>({
+function FilterGroup({
   label,
   options,
   selected,
   onToggle,
 }: {
   label: string;
-  options: T[];
-  selected: T[];
-  onToggle: (value: T) => void;
+  options: string[];
+  selected: string[];
+  onToggle: (value: string) => void;
 }) {
+  if (options.length === 0) return null;
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-        {label}
-      </span>
+      <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</span>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
           const active = selected.includes(option);
@@ -168,10 +163,7 @@ function FilterGroup<T extends string>({
             <button key={option} type="button" onClick={() => onToggle(option)} aria-pressed={active}>
               <Badge
                 variant={active ? "default" : "outline"}
-                className={cn(
-                  "cursor-pointer px-3 py-1 text-xs transition-colors",
-                  active ? "bg-accent text-accent-foreground" : "hover:bg-muted"
-                )}
+                className={cn("cursor-pointer px-3 py-1 text-xs transition-colors", active ? "bg-accent text-accent-foreground" : "hover:bg-muted")}
               >
                 {option}
               </Badge>

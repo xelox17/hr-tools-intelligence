@@ -6,7 +6,6 @@ import { LoginPage } from "@/components/auth/LoginPage";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import HomePage from "@/pages/HomePage";
 import CatalogPage from "@/pages/CatalogPage";
-import ToolDetailPage from "@/pages/ToolDetailPage";
 import AiAssistantPage from "@/pages/AiAssistantPage";
 
 // HashRouter: the Power Apps player serves this as a static bundle with no
@@ -28,7 +27,6 @@ export default function App() {
               <Route element={<AppShell />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
-                <Route path="/tools/:id" element={<ToolDetailPage />} />
                 <Route path="/ai-assistant" element={<AiAssistantPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
