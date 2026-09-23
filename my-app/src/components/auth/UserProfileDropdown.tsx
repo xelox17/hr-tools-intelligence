@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ChevronDown, LogOut, ShieldCheck } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { RoleBadge } from "@/components/auth/RoleBadge";
-import { RoleSwitcher } from "@/components/auth/RoleSwitcher";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useAccessiblePages, useAuth } from "@/lib/auth/hooks";
-import { PAGE_LABELS, ROLE_DESCRIPTIONS, ROLE_LABELS } from "@/lib/auth/roles";
+import { useAuth } from "@/lib/auth/hooks";
+import { ROLE_LABELS } from "@/lib/auth/roles";
 
 function initials(name: string): string {
   return name
@@ -17,13 +15,11 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-/** Header menu: profile, role switcher (demo), accessible pages and logout. */
+/** Header menu: profile summary and logout. */
 export function UserProfileDropdown() {
   const { user, role, logout } = useAuth();
-  const accessiblePages = useAccessiblePages();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [permissionsOpen, setPermissionsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +72,7 @@ export function UserProfileDropdown() {
       {open && (
         <div
           role="menu"
-          className="animate-slide-down absolute right-0 z-50 mt-2 flex w-80 max-w-[calc(100vw-2rem)] origin-top-right flex-col gap-3 rounded-xl bg-popover p-3 text-popover-foreground shadow-lg ring-1 ring-foreground/10"
+          className="animate-slide-down absolute right-0 z-50 mt-2 flex w-72 max-w-[calc(100vw-2rem)] origin-top-right flex-col gap-3 rounded-xl bg-popover p-3 text-popover-foreground shadow-lg ring-1 ring-foreground/10"
         >
           <section aria-label="Profile" className="flex flex-col gap-0.5">
             <div className="flex items-center justify-between gap-2">
@@ -87,43 +83,12 @@ export function UserProfileDropdown() {
             {user.department && <span className="text-xs text-muted-foreground">Department: {user.department}</span>}
           </section>
 
-          <RoleSwitcher />
-
-          <Button
-            variant="outline"
-            className="justify-start gap-2"
-            onClick={() => {
-              setOpen(false);
-              setPermissionsOpen(true);
-            }}
-          >
-            <ShieldCheck />
-            {accessiblePages.length} pages disponibles
-          </Button>
-
           <Button variant="outline" onClick={() => void handleLogout()} className="justify-start gap-2">
             <LogOut />
             Logout
           </Button>
         </div>
       )}
-
-      <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Mes permissions — {ROLE_LABELS[role]}</DialogTitle>
-            <DialogDescription>{ROLE_DESCRIPTIONS[role]}</DialogDescription>
-          </DialogHeader>
-          <ul className="mt-4 flex flex-col gap-1.5">
-            {accessiblePages.map((page) => (
-              <li key={page} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm text-foreground">
-                {PAGE_LABELS[page]}
-                <Check className="h-4 w-4 text-emerald-700 dark:text-emerald-300" aria-label="Accessible" />
-              </li>
-            ))}
-          </ul>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

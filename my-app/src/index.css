@@ -4,6 +4,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * The Next.js app sets --font-sans/--font-heading via next/font/google
+ * (layout.tsx), which has no Vite equivalent — index.html loads the same
+ * two families from Google Fonts directly, and this is what actually
+ * resolves the CSS variables the @theme block below maps to. Without this,
+ * --font-sans/--font-heading are undefined and every font-sans/font-heading
+ * utility silently falls back to the browser default (serif headings).
+ */
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
