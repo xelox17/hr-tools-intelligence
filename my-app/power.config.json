@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "appId": "3de13791-0f8e-46bd-b424-2c5bbe27584b",
+  "appDisplayName": "HR Portal",
+  "region": "prod",
+  "appType": "CodeApp",
+  "environmentId": "39e4c124-c34d-e1a1-8474-1f4b2c1050fb",
+  "description": " ",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {},
+  "databaseReferences": {}
+}

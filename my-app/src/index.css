@@ -1,0 +1,290 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --color-lesaffre-blue: var(--lesaffre-blue);
+  --color-lesaffre-dark-blue: var(--lesaffre-dark-blue);
+  --color-lesaffre-cyan: var(--lesaffre-cyan);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Lesaffre theme. These values mirror lib/config/branding.ts — keep the two
+ * in sync (lib/config/__tests__/branding.test.ts enforces it, and checks
+ * WCAG AA contrast for the text/background pairs).
+ */
+:root {
+  --lesaffre-blue: #0066cc;
+  --lesaffre-dark-blue: #00366b;
+  --lesaffre-cyan: #00b4d8;
+
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #0066cc;
+  --primary-foreground: #ffffff;
+  --secondary: #e6f0fa;
+  --secondary-foreground: #00366b;
+  --muted: #ebeff4;
+  --muted-foreground: #566170;
+  --accent: #006e9c;
+  --accent-foreground: #ffffff;
+  --destructive: #c93a32;
+  --border: #d9e0e8;
+  --input: #d9e0e8;
+  --ring: #0066cc;
+  --chart-1: #0066cc;
+  --chart-2: #00b4d8;
+  --chart-3: #00366b;
+  --chart-4: #e3a23c;
+  --chart-5: #8b5fbf;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #0066cc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6f0fa;
+  --sidebar-accent-foreground: #00366b;
+  --sidebar-border: #d9e0e8;
+  --sidebar-ring: #0066cc;
+}
+
+.dark {
+  /* One dark-blue-black family, four elevation steps: background < card <
+     muted/secondary (hover) < border. Sidebar and its active item resolve to
+     the same card/primary tokens as the rest of the app — see the comment
+     above DARK_THEME in lib/config/branding.ts for why. */
+  --background: #0f1419;
+  --foreground: #e2e8f0;
+  --card: #1a202c;
+  --card-foreground: #e2e8f0;
+  --popover: #1a202c;
+  --popover-foreground: #e2e8f0;
+  --primary: #3d8bff;
+  --primary-foreground: #00182f;
+  --secondary: #232b3d;
+  --secondary-foreground: #e2e8f0;
+  --muted: #232b3d;
+  --muted-foreground: #a9bcd6;
+  --accent: #00b4d8;
+  --accent-foreground: #00243f;
+  --destructive: #ff7b72;
+  --border: #2d3748;
+  --input: #2d3748;
+  --ring: #3d8bff;
+  --chart-1: #3d8bff;
+  --chart-2: #00b4d8;
+  --chart-3: #8cc4ff;
+  --chart-4: #f0b955;
+  --chart-5: #b490e0;
+  --sidebar: #1a202c;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-primary: #3d8bff;
+  --sidebar-primary-foreground: #00182f;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: #2d3748;
+  --sidebar-ring: #3d8bff;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  /* Smooth light/dark switch. In @layer base so component-level `transition-*`
+     utilities still win, and skipped for users who prefer reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    body,
+    header,
+    aside,
+    nav,
+    [data-slot="card"],
+    [data-slot="dialog-content"],
+    .role-badge,
+    input,
+    textarea,
+    select,
+    button,
+    a {
+      transition:
+        background-color 200ms ease,
+        color 200ms ease,
+        border-color 200ms ease;
+    }
+  }
+}
+
+/*
+ * RBAC visual indicators (see components/auth). Role badge colours are
+ * variable pairs so they work as a badge (bg + fg) and as a tint (fg only);
+ * lib/config/__tests__/branding.test.ts checks their WCAG AA contrast.
+ */
+.role-badge-admin { --badge-bg: #fde8e6; --badge-fg: #9b1c14; }
+.role-badge-rh-manager { --badge-bg: #e1eefb; --badge-fg: #00366b; }
+.role-badge-recruiter { --badge-bg: #ddf3e4; --badge-fg: #14532d; }
+.role-badge-manager { --badge-bg: #fdebd3; --badge-fg: #7a3b00; }
+.role-badge-employee { --badge-bg: #e8ebef; --badge-fg: #3a4350; }
+.dark .role-badge-admin { --badge-bg: #4a1512; --badge-fg: #ffb4ae; }
+.dark .role-badge-rh-manager { --badge-bg: #0b3560; --badge-fg: #a9d0ff; }
+.dark .role-badge-recruiter { --badge-bg: #0f3b22; --badge-fg: #9fe0b5; }
+.dark .role-badge-manager { --badge-bg: #4a2a08; --badge-fg: #ffcb8a; }
+.dark .role-badge-employee { --badge-bg: #243040; --badge-fg: #c9d2de; }
+
+@layer components {
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+  }
+
+  /* Greyed-out, non-interactive content the current role may not use. */
+
+  /* Content visible to the role but not editable. */
+  .read-only {
+    border-left: 3px solid var(--primary);
+    background: color-mix(in srgb, var(--primary) 6%, transparent);
+  }
+
+  /* Inline "access denied" panels. */
+  .permission-denied {
+    border: 1px dashed var(--destructive);
+    background: color-mix(in srgb, var(--destructive) 6%, transparent);
+  }
+}
+
+/*
+ * Motion toolkit. Static durations (they don't change with the theme), so a
+ * plain `@theme` rather than `@theme inline` — this is what generates the
+ * `animate-fade-in` / `animate-slide-down` / `animate-shimmer` utilities.
+ * Kept short (≤300ms) and non-positional (opacity/small translate only) per
+ * the Lesaffre design brief: discreet, not distracting.
+ *
+ * No `both`/`forwards` fill-mode: none of these have an animation-delay (so
+ * there's nothing for `backwards` to cover), and every element that uses them
+ * already rests at the end-keyframe values (opacity 1, transform none) once
+ * the animation stops — nothing else sets opacity/transform on them. A fill
+ * mode would keep `animation-fill-mode` retaining those values, and per the
+ * CSS stacking spec an element whose animation still "applies" that way keeps
+ * forming its own stacking context after the animation is long done — which
+ * is exactly what let page content float above the header's dropdowns
+ * (z-50 inside a stray stacking context no longer beats z-30 on <header>
+ * itself; see components/header.tsx). Without a fill mode, the animation's
+ * influence — and the stacking context it created — ends when it does.
+ */
+@theme {
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-slide-down: slide-down 200ms ease-out;
+  --animate-shimmer: shimmer 2s linear infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: -400px 0;
+  }
+  to {
+    background-position: 400px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-down,
+  .animate-shimmer {
+    animation: none;
+  }
+}
+
+@layer components {
+  /* A text link whose underline eases in on hover/focus instead of snapping
+     on — a thin background line (matches text colour) animated by width,
+     since `text-decoration` itself doesn't transition smoothly everywhere. */
+  .link-underline {
+    background-image: linear-gradient(currentcolor, currentcolor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size 200ms ease-out;
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+}
