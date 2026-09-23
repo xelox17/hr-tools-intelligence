@@ -19,7 +19,7 @@ export function LoginPage() {
     setPendingId(userId);
     const ok = await login(userId);
     setPendingId(null);
-    if (ok) navigate("/catalog");
+    if (ok) navigate("/");
     else setError("Sign-in is unavailable right now. Please try again later.");
   }
 

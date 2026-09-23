@@ -1,0 +1,262 @@
+[
+  {
+    "id": "sap-successfactors",
+    "name": "SAP SuccessFactors",
+    "category": "HRIS",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Core HR information system for the whole group",
+    "description": [
+      "SAP SuccessFactors is Lesaffre's system of record for core HR data, covering employee master data, organizational structure, and compensation across every entity in the group. It serves as the single source of truth that other corporate systems — from onboarding to learning — synchronize against.",
+      "For HR teams in more than 55 countries, SuccessFactors standardizes how positions, contracts, and reporting lines are captured, which is what makes group-wide workforce reporting and cross-country benchmarking possible in the first place."
+    ],
+    "url": "https://www.sap.com/products/hcm.html"
+  },
+  {
+    "id": "workday",
+    "name": "Workday",
+    "category": "HRIS",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Cloud HR platform for workforce planning, compensation and analytics",
+    "description": [
+      "Workday complements the core HRIS layer with dedicated modules for workforce planning, compensation benchmarking, and people analytics. It is primarily used by corporate HR and finance teams to model headcount scenarios and prepare compensation review cycles.",
+      "Because it exposes rich, near-real-time dashboards, Workday is often the first stop for HR leadership when they need a quick read on organizational trends before drilling into SuccessFactors for record-level detail."
+    ],
+    "url": "https://www.workday.com"
+  },
+  {
+    "id": "linkedin-recruiter",
+    "name": "LinkedIn Recruiter",
+    "category": "Recruitment",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Sourcing and outreach platform",
+    "description": [
+      "LinkedIn Recruiter is the group's primary sourcing channel for corporate and technical profiles, giving talent acquisition teams access to LinkedIn's global candidate pool along with InMail outreach and pipeline tracking.",
+      "It is typically used alongside Glassdoor for employer branding and local ATS tools for the application workflow itself, forming the top of the recruitment funnel for most non-plant hires."
+    ],
+    "url": "https://business.linkedin.com/talent-solutions/recruiter"
+  },
+  {
+    "id": "cornerstone-lms",
+    "name": "Cornerstone LMS",
+    "category": "Learning",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Learning management system for training and compliance",
+    "description": [
+      "Cornerstone LMS hosts the group's global training catalog, from mandatory compliance modules (safety, ethics, quality) to leadership development programs, and tracks completion for audit purposes.",
+      "Regional learning needs — like local safety regulations or language training — are often handled by satellite LMS platforms that feed completion data back into Cornerstone for group-level reporting."
+    ],
+    "url": "https://www.cornerstoneondemand.com"
+  },
+  {
+    "id": "adp-france",
+    "name": "ADP France",
+    "category": "Payroll",
+    "scope": "Local",
+    "country": "France",
+    "shortDescription": "Payroll processing and legal compliance for France",
+    "description": [
+      "ADP France handles payroll processing, payslip generation, and statutory filings for Lesaffre's French entities, keeping pace with the country's frequent changes in labor law and social contributions.",
+      "It operates independently from the group's global HRIS, with data reconciled periodically — a pattern typical of local payroll tools that exist because no single global platform covers every country's legal specifics well enough."
+    ],
+    "url": "https://www.adp.fr"
+  },
+  {
+    "id": "microsoft-teams",
+    "name": "Microsoft Teams",
+    "category": "Communication",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Collaboration hub for HR announcements and meetings",
+    "description": [
+      "Microsoft Teams is the default channel for HR communications across the group: town halls, policy announcements, and the day-to-day coordination between HR business partners in different countries.",
+      "Its ubiquity — every employee with a corporate account already has it — makes it the lowest-friction way to reach the workforce, even though it isn't a purpose-built HR tool."
+    ],
+    "url": "https://www.microsoft.com/microsoft-teams"
+  },
+  {
+    "id": "kelio",
+    "name": "Kelio",
+    "category": "Time & Attendance",
+    "scope": "Local",
+    "country": "France",
+    "shortDescription": "Time tracking and scheduling for French sites",
+    "description": [
+      "Kelio manages clock-in/clock-out tracking, shift scheduling, and absence recording for Lesaffre's French production sites, where attendance rules are tightly linked to collective bargaining agreements.",
+      "It is deployed at the site level rather than centrally, reflecting how time and attendance needs diverge sharply between office-based corporate staff and shift-based plant teams."
+    ],
+    "url": "https://www.kelio.com"
+  },
+  {
+    "id": "glassdoor",
+    "name": "Glassdoor",
+    "category": "Recruitment",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Employer branding and review monitoring",
+    "description": [
+      "Glassdoor is used to monitor how the group is perceived as an employer — reviews, salary transparency, interview feedback — and to publish curated employer-branding content aimed at attracting candidates before they even reach a job posting.",
+      "HR and communications teams track it as an early signal: a dip in ratings in a given country office often surfaces issues worth investigating well before they show up in exit interviews."
+    ],
+    "url": "https://www.glassdoor.com/employers"
+  },
+  {
+    "id": "successfactors-onboarding",
+    "name": "SuccessFactors Onboarding",
+    "category": "Onboarding",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Structured onboarding journeys for new joiners",
+    "description": [
+      "SuccessFactors Onboarding turns a new hire's first weeks into a structured journey — pre-boarding paperwork, equipment requests, introduction to the team, and mandatory first-week training — instead of an ad hoc checklist owned by a local HR contact.",
+      "Because it's tied directly to the core HRIS, a new joiner's record flows automatically from recruitment into onboarding without manual re-entry, which is exactly the kind of integration the group is trying to extend to more of its tool landscape."
+    ],
+    "url": "https://www.sap.com/products/hcm/onboarding-software.html"
+  },
+  {
+    "id": "payfit",
+    "name": "PayFit",
+    "category": "Payroll",
+    "scope": "Local",
+    "country": "France",
+    "shortDescription": "Simplified payroll and leave management",
+    "description": [
+      "PayFit is used by some of Lesaffre's smaller French entities as a lighter-weight alternative to ADP, covering payroll runs, leave requests, and expense-adjacent HR admin through a more modern self-service interface.",
+      "Its coexistence with ADP France within the same country is a good example of how tool sprawl happens organically — different entities adopted different vendors before there was a group-wide arbitration on payroll standardization."
+    ],
+    "url": "https://payfit.com"
+  },
+  {
+    "id": "biolearn-campus",
+    "name": "BioLearn Campus",
+    "category": "Learning",
+    "scope": "Local",
+    "country": "Germany",
+    "shortDescription": "Regional LMS for biotech manufacturing safety and compliance training",
+    "description": [
+      "BioLearn Campus delivers the safety, hygiene, and quality-compliance training required at Lesaffre's fermentation plants in Germany, with content mapped directly to local occupational-safety regulations that don't map cleanly onto Cornerstone's global catalog.",
+      "Plant supervisors use it to track certification renewals per shift team, which matters for audit readiness in a way that a purely global LMS, built for office-based learning paths, struggles to support out of the box."
+    ],
+    "url": "https://www.biolearn-campus.de"
+  },
+  {
+    "id": "talentbridge-china",
+    "name": "TalentBridge China",
+    "category": "Recruitment",
+    "scope": "Local",
+    "country": "China",
+    "shortDescription": "Local ATS adapted to Chinese job boards and labor regulations",
+    "description": [
+      "TalentBridge China connects Lesaffre's recruiters to domestic job boards and manages the application workflow in a market where LinkedIn's reach and functionality are limited, and where labor-contract requirements differ substantially from group norms.",
+      "It runs as a satellite ATS: candidates sourced and hired locally are entered into TalentBridge first, with only the final hire record synced up to SuccessFactors once the contract is signed."
+    ],
+    "url": "https://www.talentbridge-cn.com"
+  },
+  {
+    "id": "vidabem-wellness",
+    "name": "VidaBem Wellness",
+    "category": "Wellness",
+    "scope": "Local",
+    "country": "Brazil",
+    "shortDescription": "Employee wellbeing and occupational health platform for Brazilian sites",
+    "description": [
+      "VidaBem Wellness gives employees at Lesaffre's Brazilian sites access to telemedicine consultations, psychological support, and occupational-health scheduling, addressing requirements that are both culturally expected and, in part, legally mandated locally.",
+      "It surfaces anonymized wellbeing trends to local HR teams — without exposing individual health data — so that site leadership can spot rising stress indicators tied to specific shifts or departments."
+    ],
+    "url": "https://www.vidabem-wellness.com.br"
+  },
+  {
+    "id": "globalmove-mobility",
+    "name": "GlobalMove Mobility",
+    "category": "Mobility",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Expatriate and international assignment management platform",
+    "description": [
+      "GlobalMove Mobility coordinates the group's international assignments end to end: visa and work-permit tracking, relocation logistics, housing allowances, and tax-equalization calculations for employees moving between Lesaffre entities.",
+      "Given that a biotech group active in 55+ countries regularly moves technical experts and plant managers across borders, this is one of the few processes where a single global tool genuinely beats a patchwork of local solutions."
+    ],
+    "url": "https://www.globalmove-mobility.com"
+  },
+  {
+    "id": "askhr-assistant",
+    "name": "AskHR Assistant",
+    "category": "HR Support",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Internal AI chatbot answering employee HR policy questions",
+    "description": [
+      "AskHR Assistant is a group-wide chatbot, embedded in Teams, that answers routine HR policy questions — leave balances, benefits eligibility, expense rules — in the employee's own language, deflecting a large share of tickets away from local HR business partners.",
+      "It's trained on the group's policy documentation and escalates anything outside its confidence threshold to a human, which keeps it useful without pretending to replace HR judgment on sensitive cases."
+    ],
+    "url": "https://www.askhr-assistant.io"
+  },
+  {
+    "id": "pulsecheck-analytics",
+    "name": "PulseCheck Analytics",
+    "category": "Analytics",
+    "scope": "Corporate",
+    "country": "Global",
+    "shortDescription": "Employee engagement surveys and people-analytics dashboards",
+    "description": [
+      "PulseCheck Analytics runs the group's recurring engagement surveys and turns the results into dashboards segmented by country, function, and tenure, giving HR leadership a way to track sentiment between the larger, less frequent global surveys.",
+      "It's one of the few tools in the landscape whose entire purpose is synthesis — pulling a signal out of noisy, subjective employee feedback rather than recording a transactional HR event."
+    ],
+    "url": "https://www.pulsecheck-analytics.com"
+  },
+  {
+    "id": "kadromer-ik",
+    "name": "Kadromer İK",
+    "category": "Payroll",
+    "scope": "Local",
+    "country": "Turkey",
+    "shortDescription": "Local payroll and statutory declarations engine for Turkish subsidiaries",
+    "description": [
+      "Kadromer İK processes payroll and generates the statutory declarations required by Turkish labor and tax authorities for Lesaffre's subsidiaries in the country, an area where global payroll engines typically don't offer sufficient local coverage.",
+      "It exports summary payroll cost data on a monthly basis for consolidation into the group's finance reporting, but the underlying calculation logic stays entirely local."
+    ],
+    "url": "https://www.kadromer-ik.com.tr"
+  },
+  {
+    "id": "usaflex-benefits",
+    "name": "USAflex Benefits",
+    "category": "Payroll",
+    "scope": "Local",
+    "country": "United States",
+    "shortDescription": "Benefits administration and payroll add-on for US entities",
+    "description": [
+      "USAflex Benefits manages the open-enrollment process and ongoing administration of US-specific benefits — health insurance plans, 401(k) contributions, and flexible spending accounts — that don't have a direct equivalent in most other countries where Lesaffre operates.",
+      "It sits alongside the core payroll process as a specialized add-on rather than replacing it, reflecting how US benefits complexity tends to outgrow whatever the primary payroll vendor offers natively."
+    ],
+    "url": "https://www.usaflex-benefits.com"
+  },
+  {
+    "id": "skillforge-poland",
+    "name": "SkillForge Poland",
+    "category": "Learning",
+    "scope": "Local",
+    "country": "Poland",
+    "shortDescription": "Technical and language upskilling platform for Polish R&D and plant teams",
+    "description": [
+      "SkillForge Poland offers technical upskilling and business-language courses tailored to Lesaffre's R&D and production teams in Poland, an important talent pool for the group's fermentation research.",
+      "Course completions here don't currently sync back to Cornerstone, which is exactly the kind of gap a group-wide learning-data standardization effort would need to close first."
+    ],
+    "url": "https://www.skillforge-poland.pl"
+  },
+  {
+    "id": "safegate-access",
+    "name": "SafeGate Access",
+    "category": "Time & Attendance",
+    "scope": "Local",
+    "country": "Belgium",
+    "shortDescription": "Badge-based site access and time tracking integrated with plant safety protocols",
+    "description": [
+      "SafeGate Access combines badge-based building access control with time and attendance tracking at Lesaffre's Belgian sites, tying entry logs directly to safety-protocol compliance — for instance, blocking access to certain zones without up-to-date certification.",
+      "It's a good example of a tool that exists at the intersection of two needs — physical security and attendance — that most generic HR time-tracking systems don't cover together."
+    ],
+    "url": "https://www.safegate-access.be"
+  }
+]
