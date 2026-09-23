@@ -17,10 +17,10 @@ export function LoginPage() {
   async function handleLogin(userId: string) {
     setError(null);
     setPendingId(userId);
-    const ok = await login(userId);
+    const result = await login(userId);
     setPendingId(null);
-    if (ok) navigate("/");
-    else setError("Sign-in is unavailable right now. Please try again later.");
+    if (result.ok) navigate("/");
+    else setError(result.error ? `Sign-in failed: ${result.error}` : "Sign-in is unavailable right now. Please try again later.");
   }
 
   return (

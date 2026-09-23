@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { apiPostRaw, setToken } from "@/lib/api";
+import { apiPostRaw, ApiRequestError, setToken } from "@/lib/api";
 import { getDemoUserByRole } from "./demo-users";
 import { isUserRole } from "./roles";
 import type { User, UserRole } from "./types";
@@ -27,11 +27,17 @@ function writeStoredUser(user: User | null): void {
   }
 }
 
+export interface LoginResult {
+  ok: boolean;
+  /** The actual underlying failure, surfaced to the login screen instead of a generic message. */
+  error?: string;
+}
+
 export interface AuthContextValue {
   user: User | null;
   role: UserRole | null;
   ready: boolean;
-  login: (userId: string) => Promise<boolean>;
+  login: (userId: string) => Promise<LoginResult>;
   switchRole: (role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -61,13 +67,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (userId: string) => {
+    async (userId: string): Promise<LoginResult> => {
       try {
         const result = await apiPostRaw<{ user: User; token: string }>("/api/auth/demo-login", { userId });
         applySession(result.user, result.token);
-        return true;
-      } catch {
-        return false;
+        return { ok: true };
+      } catch (error) {
+        // Surface the real cause (network/CORS failure vs. a JSON error body
+        // from the API) instead of a single generic message — this was the
+        // only way to diagnose the demo-login envelope bug earlier, and the
+        // same visibility helps for e.g. a CORS origin mismatch in prod.
+        let message = "Unknown error.";
+        if (error instanceof ApiRequestError) message = `${error.code}: ${error.message}`;
+        else if (error instanceof TypeError) message = `Network/CORS failure: ${error.message}`;
+        else if (error instanceof Error) message = error.message;
+        return { ok: false, error: message };
       }
     },
     [applySession]
