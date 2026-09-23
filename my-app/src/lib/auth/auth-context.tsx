@@ -1,7 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { apiPostRaw, ApiRequestError, setToken } from "@/lib/api";
-import { getDemoUserByRole } from "./demo-users";
+import { getDemoUserById, getDemoUserByRole } from "./demo-users";
 import { isUserRole } from "./roles";
 import type { User, UserRole } from "./types";
 
@@ -29,7 +28,6 @@ function writeStoredUser(user: User | null): void {
 
 export interface LoginResult {
   ok: boolean;
-  /** The actual underlying failure, surfaced to the login screen instead of a generic message. */
   error?: string;
 }
 
@@ -45,11 +43,19 @@ export interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
- * Same demo-account model as the Next.js app, but the session lives in
- * sessionStorage (a bearer token + the user object) instead of an httpOnly
- * cookie — see lib/api.ts for why. `ready` is false only for the first
- * render, so pages can avoid a flash of the login screen while sessionStorage
- * is read.
+ * Fully local demo login — no network call. This used to POST to
+ * /api/auth/demo-login on the Vercel API and store the bearer token it
+ * returned, but the *published* Power Apps player (unlike the local dev
+ * preview, which is a plain browser tab) sandboxes the app and blocks
+ * fetch() to an arbitrary external origin — confirmed via a passing CORS
+ * preflight against production, ruling out Brave/extensions, and the Power
+ * Apps SDK/CLI being entirely connector-/Dataverse-oriented (`pa connector
+ * list`, `pa app add data-source`) with no setting to allow raw external
+ * fetch. The demo accounts never had a password or server-checked
+ * credential anyway, so nothing meaningful was actually being verified —
+ * this keeps the same UX without a network dependency the platform won't
+ * allow. See the PDD's own target architecture (section 11): SharePoint
+ * List / Dataverse, not a call to the Vercel app.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -60,32 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  const applySession = useCallback((nextUser: User, token: string) => {
-    setToken(token);
-    writeStoredUser(nextUser);
-    setUser(nextUser);
+  const login = useCallback(async (userId: string): Promise<LoginResult> => {
+    const demoUser = getDemoUserById(userId);
+    if (!demoUser) return { ok: false, error: "Unknown demo account." };
+    writeStoredUser(demoUser);
+    setUser(demoUser);
+    return { ok: true };
   }, []);
-
-  const login = useCallback(
-    async (userId: string): Promise<LoginResult> => {
-      try {
-        const result = await apiPostRaw<{ user: User; token: string }>("/api/auth/demo-login", { userId });
-        applySession(result.user, result.token);
-        return { ok: true };
-      } catch (error) {
-        // Surface the real cause (network/CORS failure vs. a JSON error body
-        // from the API) instead of a single generic message — this was the
-        // only way to diagnose the demo-login envelope bug earlier, and the
-        // same visibility helps for e.g. a CORS origin mismatch in prod.
-        let message = "Unknown error.";
-        if (error instanceof ApiRequestError) message = `${error.code}: ${error.message}`;
-        else if (error instanceof TypeError) message = `Network/CORS failure: ${error.message}`;
-        else if (error instanceof Error) message = error.message;
-        return { ok: false, error: message };
-      }
-    },
-    [applySession]
-  );
 
   const switchRole = useCallback(
     async (role: UserRole) => {
@@ -95,12 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    try {
-      await apiPostRaw("/api/auth/logout");
-    } catch {
-      // Best-effort server-side cleanup; the client session is cleared regardless.
-    }
-    setToken(null);
     writeStoredUser(null);
     setUser(null);
   }, []);
