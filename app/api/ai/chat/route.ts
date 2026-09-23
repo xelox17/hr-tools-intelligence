@@ -85,7 +85,16 @@ function streamGeminiReply(
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: systemPrompt }] },
             contents,
-            generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
+            generationConfig: {
+              maxOutputTokens: 1024,
+              temperature: 0.7,
+              // Gemini 3's models "think" before answering by default, which
+              // measured ~50s of latency on a two-sentence HR question — most
+              // of it invisible reasoning, not the visible reply. This is a
+              // chat widget, not a research tool: disabling it cut the same
+              // request to ~11s with no visible loss in answer quality.
+              thinkingConfig: { thinkingBudget: 0 },
+            },
           }),
         });
 
