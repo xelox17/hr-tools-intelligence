@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/lib/auth/hooks";
 import { PowerAppV2__Listerleslignes_Condition_R_ponse_R_ponse1Service as ChatFlow } from "@/generated";
 
 export type ChatRole = "user" | "assistant";
@@ -35,6 +36,7 @@ function createId(): string {
  * instead of word by word.
  */
 export function useChat() {
+  const { user } = useAuth();
   const [messages, setMessages, hydrated] = useLocalStorage<ChatMessage[]>(STORAGE_KEY, []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,14 @@ export function useChat() {
       setIsLoading(true);
 
       try {
+        // The registered flow's trigger only has two inputs (message,
+        // conversationHistory) — the signed-in demo account's id rides
+        // along as a prefix the backend strips (see chat-sync/route.ts),
+        // so the assistant addresses the actual logged-in account instead
+        // of always defaulting to a generic "Jean Dupont" persona.
+        const messageForFlow = user ? `EID:${user.id}|${content}` : content;
         const result = await ChatFlow.Run({
-          text: content,
+          text: messageForFlow,
           text_1: JSON.stringify(conversationHistory),
         });
 

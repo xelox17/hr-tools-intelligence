@@ -21,6 +21,61 @@ const DEMO_EMPLOYEE: EmployeeProfile = {
   managerName: 'Claire Martin',
 };
 
+/**
+ * One profile per demo account (see lib/auth/demo-users.ts in the Next.js
+ * app and my-app/src/lib/auth/demo-users.ts in the Power Apps code app —
+ * kept in sync by hand, both are small and static). Without this, every
+ * chat reply addressed the user as "Jean" regardless of which demo account
+ * was actually signed in, including Admin.
+ */
+const DEMO_EMPLOYEES: Record<string, EmployeeProfile> = {
+  'user-admin': {
+    id: 'user-admin',
+    firstName: 'Admin',
+    lastName: 'Lesaffre',
+    department: 'IT',
+    country: 'France',
+    language: 'français',
+    managerName: null,
+  },
+  'user-rh-manager': {
+    id: 'user-rh-manager',
+    firstName: 'Marie',
+    lastName: 'DuPont',
+    department: 'HR',
+    country: 'France',
+    language: 'français',
+    managerName: null,
+  },
+  'user-recruiter': {
+    id: 'user-recruiter',
+    firstName: 'Jean',
+    lastName: 'Recruiter',
+    department: 'Recruitment',
+    country: 'France',
+    language: 'français',
+    managerName: 'Marie DuPont',
+  },
+  'user-manager': {
+    id: 'user-manager',
+    firstName: 'Sophie',
+    lastName: 'Manager',
+    department: 'IT',
+    country: 'France',
+    language: 'français',
+    managerName: null,
+  },
+  'user-employee': {
+    id: 'user-employee',
+    firstName: 'Thomas',
+    lastName: 'Employee',
+    department: 'IT',
+    country: 'France',
+    language: 'français',
+    managerName: 'Sophie Manager',
+  },
+};
+
 const DEMO_TOOLS: HrToolInfo[] = [
   {
     id: 'successfactors',
@@ -82,11 +137,12 @@ export function filterByCountry<T extends { countries: string[] }>(items: T[], c
   return items.filter((item) => item.countries.length === 0 || item.countries.includes(country));
 }
 
-function loadDemoContext(): ContextData {
-  const country = DEMO_EMPLOYEE.country;
+function loadDemoContext(employeeId: string | undefined): ContextData {
+  const employee = (employeeId && DEMO_EMPLOYEES[employeeId]) || DEMO_EMPLOYEE;
+  const country = employee.country;
   return {
     mode: 'demo',
-    employee: DEMO_EMPLOYEE,
+    employee,
     tools: filterByCountry(DEMO_TOOLS, country),
     policies: filterByCountry(DEMO_POLICIES, country),
     contacts: DEMO_CONTACTS,
@@ -102,6 +158,7 @@ export async function buildContextData(
     // Phase 2: fetch the employee, tools and policies for `employeeId` here.
     throw new Error('Production context is not implemented yet (Phase 2).');
   }
-  // Demo mode always returns the sample profile; employeeId is ignored.
-  return loadDemoContext();
+  // Demo mode: one of the 5 known demo accounts if recognized, else the
+  // generic "Jean Dupont" fallback (e.g. a caller that sends no employeeId).
+  return loadDemoContext(employeeId);
 }

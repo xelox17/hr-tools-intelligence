@@ -44,6 +44,20 @@ interface FlowHistoryEntry {
   content: string;
 }
 
+// Matches an "EID:<id>|" prefix the Power Apps code app's useChat.ts embeds
+// in the message text. The Power Automate flow this route is built for only
+// has two trigger inputs (message, conversationHistory) — adding a third
+// ("employeeId") means re-editing that flow's designer by hand again, which
+// was the single most time-consuming part of wiring this up. Piggybacking
+// the id on the message string avoids that without changing the flow.
+const EMPLOYEE_ID_PREFIX = /^EID:([\w-]+)\|/;
+
+function extractEmployeeId(message: string): { message: string; employeeId?: string } {
+  const match = EMPLOYEE_ID_PREFIX.exec(message);
+  if (!match) return { message };
+  return { message: message.slice(match[0].length), employeeId: match[1] };
+}
+
 /** Power Automate's "message" input is one string — accept plain text or a JSON-stringified history array. */
 function parseHistory(raw: unknown): FlowHistoryEntry[] {
   if (Array.isArray(raw)) return raw as FlowHistoryEntry[];
@@ -78,8 +92,14 @@ export async function POST(request: NextRequest) {
     return errorResponse('BAD_REQUEST', 'Request body must be valid JSON.', null, 400);
   }
 
-  const { conversationHistory: rawHistory, ...rest } = (rawBody ?? {}) as Record<string, unknown>;
-  const validation = validateChatInput({ ...rest, conversationHistory: parseHistory(rawHistory) });
+  const { conversationHistory: rawHistory, message: rawMessage, ...rest } = (rawBody ?? {}) as Record<string, unknown>;
+  const { message, employeeId: embeddedEmployeeId } = extractEmployeeId(typeof rawMessage === 'string' ? rawMessage : '');
+  const validation = validateChatInput({
+    ...rest,
+    message,
+    employeeId: embeddedEmployeeId ?? rest.employeeId,
+    conversationHistory: parseHistory(rawHistory),
+  });
   if (!validation.ok) {
     return errorResponse(validation.code, validation.message, null, 400);
   }
