@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { getCategoryMeta } from "@/lib/category-meta";
+import { useToolAnalytics } from "@/hooks/useToolAnalytics";
 import { cn } from "@/lib/utils";
 import type { Application } from "@/data/applications";
 
@@ -14,6 +15,7 @@ const STATUS_BADGE = {
 
 export function ApplicationCard({ app }: { app: Application }) {
   const { icon: Icon, border, badge } = getCategoryMeta(app.subcategory);
+  const { recordOpen } = useToolAnalytics();
   const status = app.status ?? "Active";
 
   return (
@@ -40,6 +42,7 @@ export function ApplicationCard({ app }: { app: Application }) {
           href={app.url}
           target="_blank"
           rel="noreferrer"
+          onClick={() => recordOpen(app.id)}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-1 justify-center gap-1.5")}
         >
           Open

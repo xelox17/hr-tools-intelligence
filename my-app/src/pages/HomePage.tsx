@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Bot, LayoutGrid, LibraryBig, ShieldCheck, Tags } from "lucide-react";
+import { ArrowRight, BarChart3, Bot, LayoutGrid, LibraryBig, ShieldCheck, Tags } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { applications, hrSubcategories } from "@/data/applications";
+import { hrSubcategories } from "@/data/applications";
+import { useToolsCatalog } from "@/hooks/useToolsCatalog";
+import { useToolAnalytics } from "@/hooks/useToolAnalytics";
+import { useAuth } from "@/lib/auth/hooks";
+import { filterVisibleTools } from "@/lib/visibility";
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 
 // No charts here (dropped, per the group's "keep it simple" request) — the
-// catalog's own sub-category/scope/status filters already cover this data.
+// catalog's own sub-category/scope filters already cover this data.
 const QUICK_ACCESS = [
   {
     href: "/ai-assistant",
@@ -23,7 +27,12 @@ const QUICK_ACCESS = [
 ];
 
 export default function HomePage() {
-  const activeCount = applications.filter((a) => (a.status ?? "Active") === "Active").length;
+  const { user } = useAuth();
+  const { tools } = useToolsCatalog();
+  const { topTools, totalOpens } = useToolAnalytics();
+  const visibleTools = filterVisibleTools(tools, user);
+  const activeCount = visibleTools.filter((a) => (a.status ?? "Active") === "Active").length;
+  const mostOpened = topTools(5);
 
   return (
     <div className="flex flex-col gap-10">
@@ -36,7 +45,9 @@ export default function HomePage() {
           <span className="text-xs font-semibold tracking-widest text-white/90 uppercase">
             {LESAFFRE_THEME.productName}
           </span>
-          <h1 className="font-heading text-3xl font-bold sm:text-4xl">Bienvenue au portail RH Lesaffre</h1>
+          <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+            {user ? `Bienvenue, ${user.name.split(" ")[0]} !` : "Bienvenue au portail RH Lesaffre"}
+          </h1>
           <p className="text-base text-white/90 sm:text-lg">{LESAFFRE_THEME.tagline}</p>
           <div className="mt-2 flex flex-wrap gap-3">
             <Link
@@ -90,7 +101,7 @@ export default function HomePage() {
         <div>
           <h2 className="font-heading text-xl font-bold text-foreground">Portefeuille d'outils RH</h2>
           <p className="text-sm text-muted-foreground">
-            Overview of the HR tools portfolio across the Lesaffre group.
+            Overview of the HR tools portfolio available to you.
           </p>
         </div>
         <Link to="/catalog" className="text-sm font-medium text-accent link-underline">
@@ -99,10 +110,51 @@ export default function HomePage() {
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total tools" value={applications.length} icon={LayoutGrid} />
+        <KpiCard label="Total tools" value={visibleTools.length} icon={LayoutGrid} />
         <KpiCard label="Categories" value={hrSubcategories.length} icon={Tags} />
         <KpiCard label="Active" value={activeCount} icon={ShieldCheck} />
-        <KpiCard label="Corporate scope" value={applications.filter((a) => a.scope === "Corporate").length} icon={Bot} />
+        <KpiCard label="Corporate scope" value={visibleTools.filter((a) => a.scope === "Corporate").length} icon={Bot} />
+      </section>
+
+      {/* Lightweight stand-in for the PDD's "cible" Power BI usage dashboard
+          (no Power BI license or real data source here) — counts "Open
+          tool" clicks in this browser only. */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <h2 className="font-heading text-lg font-semibold text-foreground">Outils les plus consultés</h2>
+        </div>
+        <Card className="border-border">
+          <CardContent>
+            {mostOpened.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucun clic enregistré pour l'instant — ouvrez un outil depuis le catalogue pour commencer à voir des statistiques.
+              </p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border">
+                {mostOpened.map(({ id, count }) => {
+                  const tool = tools.find((t) => t.id === id);
+                  const max = mostOpened[0]?.count ?? 1;
+                  return (
+                    <li key={id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+                      <span className="w-32 shrink-0 truncate text-sm font-medium text-foreground">{tool?.title ?? id}</span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${(count / max) * 100}%` }} />
+                      </div>
+                      <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
+                        {count} clic{count > 1 ? "s" : ""}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <p className="mt-3 text-xs text-muted-foreground">
+              {totalOpens} ouverture{totalOpens > 1 ? "s" : ""} enregistrée{totalOpens > 1 ? "s" : ""} dans ce navigateur (démo — un vrai
+              tableau de bord Power BI nécessiterait Dataverse/une base de données partagée).
+            </p>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );

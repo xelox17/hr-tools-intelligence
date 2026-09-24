@@ -15,4 +15,6 @@ export interface User {
   department?: string;
   managerId?: string;
   teamId?: string;
+  /** Used to filter the catalog to country-specific tools (PDD §5.3). All demo accounts are France for now. */
+  country?: string;
 }

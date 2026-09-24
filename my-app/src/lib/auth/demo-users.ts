@@ -7,6 +7,7 @@ export const DEMO_USERS: User[] = [
     name: 'Admin Lesaffre',
     email: 'admin@lesaffre.com',
     role: 'ADMIN',
+    country: 'France',
     department: 'IT',
   },
   {
@@ -14,6 +15,7 @@ export const DEMO_USERS: User[] = [
     name: 'Marie DuPont',
     email: 'marie@lesaffre.com',
     role: 'RH_MANAGER',
+    country: 'France',
     department: 'HR',
   },
   {
@@ -21,6 +23,7 @@ export const DEMO_USERS: User[] = [
     name: 'Jean Recruiter',
     email: 'jean.recruiter@lesaffre.com',
     role: 'RECRUITER',
+    country: 'France',
     department: 'Recruitment',
   },
   {
@@ -28,6 +31,7 @@ export const DEMO_USERS: User[] = [
     name: 'Sophie Manager',
     email: 'sophie@lesaffre.com',
     role: 'MANAGER',
+    country: 'France',
     department: 'IT',
     teamId: 'team-it-1',
   },
@@ -36,6 +40,7 @@ export const DEMO_USERS: User[] = [
     name: 'Thomas Employee',
     email: 'thomas@lesaffre.com',
     role: 'EMPLOYEE',
+    country: 'France',
     department: 'IT',
     managerId: 'user-manager',
     teamId: 'team-it-1',

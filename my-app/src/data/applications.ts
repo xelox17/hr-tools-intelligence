@@ -7,13 +7,18 @@
 // — Finance/Sales/GRC/etc. are internal tools for those specific teams, not
 // something every employee needs surfaced.
 
+export type RoleLevel = "All" | "Manager" | "HR";
+
 export interface Application {
   id: string;
   title: string;
   category: string; // Always "Human Resources" here.
   subcategory?: string; // Recruitment, Learning, Corporate, Payroll
   scope?: "Corporate" | "Local" | "Both";
+  /** Set only for scope: "Local" tools — undefined/empty means "every country" (PDD §5.3's "Global"). */
   country?: string;
+  /** PDD §5.3's RoleLevel: who this tool is relevant to. "All" = every employee. */
+  roleLevel?: RoleLevel;
   description: string;
   url: string;
   vendor?: string;
@@ -30,6 +35,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Recruitment",
     scope: "Corporate",
+    roleLevel: "HR",
     description: "ATS (Applicant Tracking System) - Manage entire recruitment process from sourcing to hiring",
     url: "https://www.smartrecruiters.com/account/sign-in",
     vendor: "SmartRecruiters",
@@ -43,6 +49,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Recruitment",
     scope: "Corporate",
+    roleLevel: "All",
     description: "World Of Opportunities - Internal mobility platform for job postings and applications",
     url: "https://woo.lesaffre.com/coopters/sign_in",
     vendor: "Lesaffre Homemade",
@@ -56,6 +63,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Recruitment",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Onboarding platform - Provide newcomers with essential information and workflows",
     url: "https://lesaffre.apps.talmundo.com/",
     vendor: "Talmundo",
@@ -69,6 +77,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Recruitment",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Career Management - Annual reviews, skills management, and career path planning",
     url: "https://tao.lesaffre.com/",
     vendor: "NEOBRAIN",
@@ -82,6 +91,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Recruitment",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Travel request and approval management system",
     url: "https://apps.hirondelle.com/travel_requests",
     vendor: "Lesaffre Homemade",
@@ -96,6 +106,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Learning",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Learning Management System (LMS) - E-learning platform for training content and courses",
     url: "https://lesaffre.eu.crossknowledge.com/interfaces/login.php",
     vendor: "CrossKnowledge",
@@ -109,6 +120,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Learning",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Training Portal - Centralize and standardize training management across the group",
     url: "https://tipi.lesaffre.app/",
     vendor: "Lesaffre Homemade",
@@ -122,6 +134,8 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Learning",
     scope: "Local",
+    country: "France",
+    roleLevel: "All",
     description: "Local Training Portal - Training management for local sites",
     url: "https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a",
     vendor: "Power Apps",
@@ -134,6 +148,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Learning",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Corporate Training Registration - Register for Institut Léon Lesaffre training sessions",
     url: "https://corporate-training-registration.lesaffre.com/",
     vendor: "Lesaffre Homemade",
@@ -149,6 +164,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Core HR Data Model - Central repository for all employee and organizational data",
     url: "https://link.lesaffre.com/",
     vendor: "Lesaffre HRIS",
@@ -161,6 +177,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "HR",
     description: "Access and Identity Management - Manage digital identities and access throughout employee lifecycle",
     url: "https://apps.powerapps.com/play/f9b107b8-46b1-403d-b33b-333aabdd9fdb",
     vendor: "Power Apps",
@@ -174,6 +191,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "Manager",
     description: "Manager Access Control - Manage team member access and user provisioning",
     url: "https://apps.powerapps.com/play/7a59b748-91a8-4c9e-a968-f382a0cf4cd4",
     vendor: "Power Apps",
@@ -187,6 +205,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Employee Benefits Portal - Manage and consult employee benefits",
     url: "https://cselect.club-employes.com/login",
     vendor: "Club Employes",
@@ -199,6 +218,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "HR",
     description: "Project Management Platform - Collaborate on HR projects and initiatives",
     url: "https://lesaffre.bloomflow.com/login",
     vendor: "Bloomflow",
@@ -211,6 +231,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Microsoft Office Suite - Email, collaboration, and productivity tools",
     url: "https://www.office.com/",
     vendor: "Microsoft",
@@ -223,6 +244,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Corporate",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Centralized Documentation - Access HR policies, procedures, and documentation",
     url: "https://knowledge-center.hirondelle.com/",
     vendor: "Lesaffre Homemade",
@@ -237,6 +259,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "Manager",
     description: "Bonus Management - Support annual bonus campaigns and approvals",
     url: "https://bonus.lesaffre.com/",
     vendor: "LINK Module",
@@ -249,6 +272,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Employee Bonus Portal - Participate in bonus campaigns and track results",
     url: "https://mybonus.lesaffre.com/users/sign_in",
     vendor: "LINK Module",
@@ -261,6 +285,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "HR",
     description: "Payroll System - Process payroll and manage compensation",
     url: "https://mon.adp.com/redbox/",
     vendor: "ADP",
@@ -273,6 +298,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Expense Management - Submit and approve expense reports",
     url: "https://www.concursolutions.com/",
     vendor: "Concur",
@@ -285,6 +311,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Time Tracking System - Log and track work hours",
     url: "https://lesaffre.cloud-horoquartz.fr/webquartz/ux/home",
     vendor: "Horoquartz",
@@ -297,6 +324,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "All",
     description: "Time Registration - Track employee time entries and attendance",
     url: "https://apps.hirondelle.com/tempspasse",
     vendor: "Lesaffre Homemade",
@@ -309,6 +337,7 @@ export const applications: Application[] = [
     category: "Human Resources",
     subcategory: "Payroll",
     scope: "Corporate",
+    roleLevel: "HR",
     description: "Payroll Documents Storage - Secure storage and access to payroll documents",
     url: "https://sharing.oodrive.com/auth/ws/lesaffre-csppaie",
     vendor: "OODrive",

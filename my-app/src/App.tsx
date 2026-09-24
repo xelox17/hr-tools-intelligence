@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth/auth-context";
 import HomePage from "@/pages/HomePage";
 import CatalogPage from "@/pages/CatalogPage";
 import AiAssistantPage from "@/pages/AiAssistantPage";
+import AdminPage from "@/pages/AdminPage";
 
 // HashRouter: the Power Apps player serves this as a static bundle with no
 // server-side rewrite rule for a SPA's deep links (unlike Vercel, which the
@@ -28,6 +29,7 @@ export default function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
                 <Route path="/ai-assistant" element={<AiAssistantPage />} />
+                <Route path="/admin" element={<AdminPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>

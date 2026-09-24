@@ -3,7 +3,10 @@ import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ApplicationCard } from "@/components/application-card";
-import { applications, hrSubcategories, type Application } from "@/data/applications";
+import { hrSubcategories, type Application } from "@/data/applications";
+import { useToolsCatalog } from "@/hooks/useToolsCatalog";
+import { useAuth } from "@/lib/auth/hooks";
+import { filterVisibleTools } from "@/lib/visibility";
 import { cn } from "@/lib/utils";
 
 const SCOPES = ["Corporate", "Local"] as const;
@@ -29,17 +32,22 @@ function matches(app: Application, query: string): boolean {
  * status filter either — every tool here is Active, so it filtered nothing.)
  */
 export function CatalogView() {
+  const { user } = useAuth();
+  const { tools: allTools } = useToolsCatalog();
   const [query, setQuery] = useState("");
   const [subcategories, setSubcategories] = useState<string[]>([]);
   const [scopes, setScopes] = useState<string[]>([]);
 
+  const visibleTools = useMemo(() => filterVisibleTools(allTools, user), [allTools, user]);
+  const hiddenCount = allTools.length - visibleTools.length;
+
   const filtered = useMemo(() => {
-    return applications.filter((app) => {
+    return visibleTools.filter((app) => {
       if (subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
       if (scopes.length && !scopes.includes(app.scope ?? "")) return false;
       return matches(app, query);
     });
-  }, [query, subcategories, scopes]);
+  }, [visibleTools, query, subcategories, scopes]);
 
   const hasActiveFilters = query.trim().length > 0 || subcategories.length > 0 || scopes.length > 0;
 
@@ -88,7 +96,8 @@ export function CatalogView() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {applications.length} HR tools
+        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {visibleTools.length} HR tools
+        {hiddenCount > 0 && <span> · {hiddenCount} not shown (country/role restricted)</span>}
       </p>
 
       {filtered.length > 0 ? (
