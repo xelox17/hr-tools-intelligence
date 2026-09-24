@@ -76,35 +76,42 @@ const DEMO_EMPLOYEES: Record<string, EmployeeProfile> = {
   },
 };
 
+/**
+ * Mirrors my-app/src/data/applications.ts's 23 HR tools (kept in sync by
+ * hand — same reasoning as DEMO_EMPLOYEES above). Before this, the
+ * assistant only knew about 4 generic placeholder tools, so anything
+ * outside that list (e.g. "LINK", the group's actual core HR system) got
+ * either invented or deflected — the prompt explicitly tells it to rely
+ * only on this list and admit when something isn't on it.
+ */
 const DEMO_TOOLS: HrToolInfo[] = [
-  {
-    id: 'successfactors',
-    name: 'SuccessFactors',
-    category: 'Core HR',
-    description: 'Dossier employé, demandes de congés, organigramme.',
-    countries: [],
-  },
-  {
-    id: 'cornerstone',
-    name: 'Cornerstone',
-    category: 'Formation',
-    description: 'Catalogue de formations et suivi des parcours.',
-    countries: [],
-  },
-  {
-    id: 'payfit-fr',
-    name: 'Portail Paie France',
-    category: 'Paie',
-    description: 'Consultation des bulletins de paie.',
-    countries: ['France'],
-  },
-  {
-    id: 'timesheet-us',
-    name: 'Timesheet US',
-    category: 'Temps de travail',
-    description: 'Saisie des heures pour les sites américains.',
-    countries: ['United States'],
-  },
+  // Recruitment
+  { id: 'hr-rec-001', name: 'Smart Recruiters', category: 'Recruitment', description: 'ATS — gère tout le processus de recrutement, du sourcing à l’embauche.', countries: [], url: 'https://www.smartrecruiters.com/account/sign-in' },
+  { id: 'hr-rec-002', name: 'WOO', category: 'Recruitment', description: 'World Of Opportunities — plateforme de mobilité interne pour postuler aux offres du groupe.', countries: [], url: 'https://woo.lesaffre.com/coopters/sign_in' },
+  { id: 'hr-rec-003', name: 'NEST', category: 'Recruitment', description: 'Plateforme d’onboarding pour les nouveaux arrivants.', countries: [], url: 'https://lesaffre.apps.talmundo.com/' },
+  { id: 'hr-rec-004', name: 'TAO', category: 'Recruitment', description: 'Gestion de carrière — entretiens annuels, compétences, plans de carrière.', countries: [], url: 'https://tao.lesaffre.com/' },
+  { id: 'hr-rec-005', name: 'Travel Requests', category: 'Recruitment', description: 'Demandes et approbations de déplacements professionnels.', countries: [], url: 'https://apps.hirondelle.com/travel_requests' },
+  // Learning
+  { id: 'hr-learn-001', name: 'LEA', category: 'Learning', description: 'LMS — plateforme e-learning pour les contenus et cours de formation.', countries: [], url: 'https://lesaffre.eu.crossknowledge.com/interfaces/login.php' },
+  { id: 'hr-learn-002', name: 'TIPI Group', category: 'Learning', description: 'Portail de formation centralisé pour tout le groupe.', countries: [], url: 'https://tipi.lesaffre.app/' },
+  { id: 'hr-learn-003', name: 'TIPI L.int', category: 'Learning', description: 'Portail de formation local pour les sites locaux.', countries: ['France'], url: 'https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a' },
+  { id: 'hr-learn-004', name: 'CTR', category: 'Learning', description: 'Inscription aux sessions de formation de l’Institut Léon Lesaffre.', countries: [], url: 'https://corporate-training-registration.lesaffre.com/' },
+  // Corporate
+  { id: 'hr-corp-001', name: 'LINK', category: 'Corporate', description: 'Système Core HR du groupe — référentiel central des données employés et organisationnelles (dossier employé, congés, organigramme).', countries: [], url: 'https://link.lesaffre.com/' },
+  { id: 'hr-corp-002', name: 'User Management Tool - HR', category: 'Corporate', description: 'Gestion des identités et accès numériques tout au long du cycle de vie employé (équipes RH).', countries: [], url: 'https://apps.powerapps.com/play/f9b107b8-46b1-403d-b33b-333aabdd9fdb' },
+  { id: 'hr-corp-003', name: 'User Management Tool - Managers', category: 'Corporate', description: 'Gestion des accès des membres d’équipe (managers).', countries: [], url: 'https://apps.powerapps.com/play/7a59b748-91a8-4c9e-a968-f382a0cf4cd4' },
+  { id: 'hr-corp-004', name: 'CSE', category: 'Corporate', description: 'Portail des avantages salariés.', countries: [], url: 'https://cselect.club-employes.com/login' },
+  { id: 'hr-corp-005', name: 'Bloomflow', category: 'Corporate', description: 'Gestion de projets RH.', countries: [], url: 'https://lesaffre.bloomflow.com/login' },
+  { id: 'hr-corp-006', name: 'Office 365', category: 'Corporate', description: 'Suite Microsoft — email, collaboration, bureautique.', countries: [], url: 'https://www.office.com/' },
+  { id: 'hr-corp-007', name: 'Knowledge Center', category: 'Corporate', description: 'Documentation centralisée — politiques, procédures RH.', countries: [], url: 'https://knowledge-center.hirondelle.com/' },
+  // Payroll
+  { id: 'hr-payroll-001', name: 'Bonus', category: 'Payroll', description: 'Gestion des campagnes de bonus annuels (RH, managers).', countries: [], url: 'https://bonus.lesaffre.com/' },
+  { id: 'hr-payroll-002', name: 'MyBonus', category: 'Payroll', description: 'Portail employé pour participer aux campagnes de bonus et suivre les résultats.', countries: [], url: 'https://mybonus.lesaffre.com/users/sign_in' },
+  { id: 'hr-payroll-003', name: 'ADP', category: 'Payroll', description: 'Système de paie — traitement de la paie et de la rémunération.', countries: [], url: 'https://mon.adp.com/redbox/' },
+  { id: 'hr-payroll-004', name: 'CONCUR', category: 'Payroll', description: 'Gestion des notes de frais.', countries: [], url: 'https://www.concursolutions.com/' },
+  { id: 'hr-payroll-005', name: 'Horoquartz', category: 'Payroll', description: 'Suivi du temps de travail.', countries: [], url: 'https://lesaffre.cloud-horoquartz.fr/webquartz/ux/home' },
+  { id: 'hr-payroll-006', name: 'Time Tracking System', category: 'Payroll', description: 'Saisie des entrées de temps et de la présence.', countries: [], url: 'https://apps.hirondelle.com/tempspasse' },
+  { id: 'hr-payroll-007', name: 'OODrive - CSP Paie', category: 'Payroll', description: 'Stockage sécurisé et accès aux documents de paie.', countries: [], url: 'https://sharing.oodrive.com/auth/ws/lesaffre-csppaie' },
 ];
 
 const DEMO_POLICIES: HrPolicy[] = [
