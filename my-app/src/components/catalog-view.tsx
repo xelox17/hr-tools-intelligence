@@ -6,8 +6,6 @@ import { ApplicationCard } from "@/components/application-card";
 import { applications, hrSubcategories, type Application } from "@/data/applications";
 import { cn } from "@/lib/utils";
 
-type Status = NonNullable<Application["status"]>;
-const STATUSES: Status[] = ["Active", "Planned", "Deprecated"];
 const SCOPES = ["Corporate", "Local"] as const;
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -27,30 +25,28 @@ function matches(app: Application, query: string): boolean {
  * is open to the whole ~6,000-employee workforce, so it surfaces what every
  * employee needs (recruitment, learning, payroll, core HR), not internal
  * Finance/Sales/R&D/etc. tooling. With a single category, there is no
- * top-level category filter — just the HR sub-category, scope and status.
+ * top-level category filter — just the HR sub-category and scope. (No
+ * status filter either — every tool here is Active, so it filtered nothing.)
  */
 export function CatalogView() {
   const [query, setQuery] = useState("");
   const [subcategories, setSubcategories] = useState<string[]>([]);
   const [scopes, setScopes] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<Status[]>([]);
 
   const filtered = useMemo(() => {
     return applications.filter((app) => {
       if (subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
       if (scopes.length && !scopes.includes(app.scope ?? "")) return false;
-      if (statuses.length && !statuses.includes(app.status ?? "Active")) return false;
       return matches(app, query);
     });
-  }, [query, subcategories, scopes, statuses]);
+  }, [query, subcategories, scopes]);
 
-  const hasActiveFilters = query.trim().length > 0 || subcategories.length > 0 || scopes.length > 0 || statuses.length > 0;
+  const hasActiveFilters = query.trim().length > 0 || subcategories.length > 0 || scopes.length > 0;
 
   function clearFilters() {
     setQuery("");
     setSubcategories([]);
     setScopes([]);
-    setStatuses([]);
   }
 
   return (
@@ -78,12 +74,6 @@ export function CatalogView() {
           onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
         />
         <FilterGroup label="Scope" options={[...SCOPES]} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
-        <FilterGroup
-          label="Status"
-          options={STATUSES}
-          selected={statuses}
-          onToggle={(value) => setStatuses((prev) => toggle(prev, value as Status))}
-        />
 
         {hasActiveFilters && (
           <button

@@ -14,45 +14,88 @@ export interface ChatMessage {
   escalated?: boolean;
 }
 
-const STORAGE_KEY = "hr-chat-history";
-const MAX_STORED_MESSAGES = 100;
+export interface Conversation {
+  id: string;
+  /** Auto-derived from the first message; "Nouvelle conversation" until then. */
+  title: string;
+  messages: ChatMessage[];
+  updatedAt: number;
+}
+
+const CONVERSATIONS_KEY = "hr-chat-conversations";
+const ACTIVE_ID_KEY = "hr-chat-active-conversation-id";
+const MAX_CONVERSATIONS = 30;
+const MAX_MESSAGES_PER_CONVERSATION = 100;
 const HISTORY_SENT_TO_FLOW = 10;
+const TITLE_MAX_CHARS = 42;
 
 function createId(): string {
   return crypto.randomUUID();
 }
 
+function titleFromMessage(text: string): string {
+  const flat = text.trim().replace(/\s+/g, " ");
+  if (!flat) return "Nouvelle conversation";
+  return flat.length > TITLE_MAX_CHARS ? `${flat.slice(0, TITLE_MAX_CHARS)}…` : flat;
+}
+
+function newConversation(): Conversation {
+  return { id: createId(), title: "Nouvelle conversation", messages: [], updatedAt: Date.now() };
+}
+
 /**
  * Calls the HR chatbot through a Power Automate cloud flow instead of a
- * direct fetch() to the Vercel API. The *published* Power Apps player
- * sandboxes fetch() to an external origin (confirmed: login and the chat
- * both failed with "Failed to fetch" there, even though both worked fine
- * in a plain browser tab) — a registered cloud flow is the supported way
- * for a code app to reach outside Power Platform. The flow itself just
- * forwards to POST /api/ai/chat-sync (see that route's comment) and
- * returns one `reply` string — no token-by-token streaming, since neither
- * the flow's "Respond to a PowerApp or flow" action nor the generated
- * data-source client support it. The UI fills in the full reply at once
- * instead of word by word.
+ * direct fetch() to the Vercel API — see the extensive comment this hook
+ * used to carry (git history) for why. Conversations are multi-session
+ * (like any generative AI chat UI): each has its own message list, stored
+ * as a list in localStorage rather than one flat history, with a
+ * `startNewConversation`/`switchConversation`/`deleteConversation` API for
+ * the History dropdown in ChatComponent.tsx.
  */
 export function useChat() {
   const { user } = useAuth();
-  const [messages, setMessages, hydrated] = useLocalStorage<ChatMessage[]>(STORAGE_KEY, []);
+  const [conversations, setConversations, hydrated] = useLocalStorage<Conversation[]>(CONVERSATIONS_KEY, []);
+  const [activeId, setActiveId] = useLocalStorage<string | null>(ACTIVE_ID_KEY, null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const active = conversations.find((c) => c.id === activeId) ?? null;
+  const messages = active?.messages ?? [];
+
+  /** Returns the active conversation, creating one first if none exists yet. */
+  const ensureActiveConversation = useCallback((): Conversation => {
+    if (active) return active;
+    const fresh = newConversation();
+    setConversations((prev) => [fresh, ...prev].slice(0, MAX_CONVERSATIONS));
+    setActiveId(fresh.id);
+    return fresh;
+  }, [active, setConversations, setActiveId]);
 
   const sendMessage = useCallback(
     async (text: string) => {
       const content = text.trim();
       if (!content || isLoading || !hydrated) return;
 
-      const conversationHistory = messages
+      const conv = ensureActiveConversation();
+      const isFirstMessage = conv.messages.length === 0;
+      const conversationHistory = conv.messages
         .filter((message) => message.content)
         .slice(-HISTORY_SENT_TO_FLOW)
         .map(({ role, content: body }) => ({ role, content: body }));
 
       const userMessage: ChatMessage = { id: createId(), role: "user", content, createdAt: Date.now() };
-      setMessages((prev) => [...prev, userMessage].slice(-MAX_STORED_MESSAGES));
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conv.id
+            ? {
+                ...c,
+                messages: [...c.messages, userMessage].slice(-MAX_MESSAGES_PER_CONVERSATION),
+                title: isFirstMessage ? titleFromMessage(content) : c.title,
+                updatedAt: Date.now(),
+              }
+            : c
+        )
+      );
       setError(null);
       setIsLoading(true);
 
@@ -61,7 +104,7 @@ export function useChat() {
         // conversationHistory) — the signed-in demo account's id rides
         // along as a prefix the backend strips (see chat-sync/route.ts),
         // so the assistant addresses the actual logged-in account instead
-        // of always defaulting to a generic "Jean Dupont" persona.
+        // of always defaulting to a generic persona.
         const messageForFlow = user ? `EID:${user.id}|${content}` : content;
         const result = await ChatFlow.Run({
           text: messageForFlow,
@@ -79,14 +122,20 @@ export function useChat() {
           content: result.data.reply,
           createdAt: Date.now(),
         };
-        setMessages((prev) => [...prev, assistantMessage].slice(-MAX_STORED_MESSAGES));
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === conv.id
+              ? { ...c, messages: [...c.messages, assistantMessage].slice(-MAX_MESSAGES_PER_CONVERSATION), updatedAt: Date.now() }
+              : c
+          )
+        );
       } catch (err) {
         setError(err instanceof Error ? err.message : "Une erreur est survenue.");
       } finally {
         setIsLoading(false);
       }
     },
-    [hydrated, isLoading, messages, setMessages]
+    [ensureActiveConversation, hydrated, isLoading, setConversations, user]
   );
 
   // No in-flight request to cancel (the flow call isn't cancellable once
@@ -95,18 +144,61 @@ export function useChat() {
     setIsLoading(false);
   }, []);
 
+  /** Clears the *active* conversation's messages (keeps it, empties it). */
   const clearHistory = useCallback(() => {
     setIsLoading(false);
     setError(null);
-    setMessages([]);
-  }, [setMessages]);
+    if (!active) return;
+    setConversations((prev) => prev.map((c) => (c.id === active.id ? { ...c, messages: [], title: "Nouvelle conversation" } : c)));
+  }, [active, setConversations]);
 
   const deleteMessage = useCallback(
     (id: string) => {
-      setMessages((prev) => prev.filter((message) => message.id !== id));
+      if (!active) return;
+      setConversations((prev) => prev.map((c) => (c.id === active.id ? { ...c, messages: c.messages.filter((m) => m.id !== id) } : c)));
     },
-    [setMessages]
+    [active, setConversations]
   );
 
-  return { messages, isLoading, error, sendMessage, cancelMessage, clearHistory, deleteMessage };
+  const startNewConversation = useCallback(() => {
+    const fresh = newConversation();
+    setConversations((prev) => [fresh, ...prev].slice(0, MAX_CONVERSATIONS));
+    setActiveId(fresh.id);
+    setError(null);
+  }, [setConversations, setActiveId]);
+
+  const switchConversation = useCallback(
+    (id: string) => {
+      setActiveId(id);
+      setError(null);
+    },
+    [setActiveId]
+  );
+
+  const deleteConversation = useCallback(
+    (id: string) => {
+      setConversations((prev) => {
+        const next = prev.filter((c) => c.id !== id);
+        if (id === activeId) setActiveId(next[0]?.id ?? null);
+        return next;
+      });
+    },
+    [activeId, setActiveId, setConversations]
+  );
+
+  return {
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    cancelMessage,
+    clearHistory,
+    deleteMessage,
+    // Conversation history (newest first for the dropdown).
+    conversations: [...conversations].sort((a, b) => b.updatedAt - a.updatedAt),
+    activeConversationId: active?.id ?? null,
+    startNewConversation,
+    switchConversation,
+    deleteConversation,
+  };
 }

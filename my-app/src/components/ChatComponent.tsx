@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { AlertTriangle, Bot, Send, Square, Trash2, User, X } from "lucide-react";
+import { AlertTriangle, Bot, History, MessageSquarePlus, Send, Square, Trash2, User, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useChat, type ChatMessage } from "@/hooks/useChat";
+import { useChat, type ChatMessage, type Conversation } from "@/hooks/useChat";
 import { cn } from "@/lib/utils";
 
 const QUICK_SUGGESTIONS = [
@@ -13,6 +13,17 @@ const QUICK_SUGGESTIONS = [
   { label: "Télétravail", prompt: "Quelle est la politique de télétravail ?" },
   { label: "Outils RH", prompt: "Quels outils RH sont à ma disposition ?" },
 ];
+
+function relativeDate(timestamp: number): string {
+  const diffMs = Date.now() - timestamp;
+  const diffMin = Math.round(diffMs / 60000);
+  if (diffMin < 1) return "à l'instant";
+  if (diffMin < 60) return `il y a ${diffMin} min`;
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24) return `il y a ${diffH} h`;
+  const diffD = Math.round(diffH / 24);
+  return `il y a ${diffD} j`;
+}
 
 function MessageBubble({
   message,
@@ -77,8 +88,127 @@ function MessageBubble({
   );
 }
 
+/** Dropdown listing past conversations, with "new conversation" at the top — like any generative AI chat UI. */
+function HistoryMenu({
+  conversations,
+  activeId,
+  onNew,
+  onSelect,
+  onDelete,
+}: {
+  conversations: Conversation[];
+  activeId: string | null;
+  onNew: () => void;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <Button
+        variant="ghost"
+        size="xs"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Historique des conversations"
+      >
+        <History />
+        Historique
+      </Button>
+
+      {open && (
+        <div
+          role="menu"
+          className="animate-slide-down absolute right-0 z-50 mt-2 flex max-h-96 w-72 max-w-[calc(100vw-2rem)] flex-col gap-1 overflow-y-auto rounded-xl bg-popover p-2 text-popover-foreground shadow-lg ring-1 ring-foreground/10"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              onNew();
+              setOpen(false);
+            }}
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-accent hover:bg-muted"
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+            Nouvelle conversation
+          </button>
+
+          {conversations.length > 0 && <div role="separator" className="my-1 h-px shrink-0 bg-border" />}
+
+          {conversations.length === 0 ? (
+            <p className="px-2 py-4 text-center text-xs text-muted-foreground">Aucune conversation pour l'instant.</p>
+          ) : (
+            conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={cn(
+                  "group flex items-center gap-1 rounded-lg px-1 py-1 text-sm",
+                  conversation.id === activeId ? "bg-muted" : "hover:bg-muted"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelect(conversation.id);
+                    setOpen(false);
+                  }}
+                  className="flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md px-1.5 py-1 text-left"
+                >
+                  <span className="w-full truncate font-medium text-foreground">{conversation.title}</span>
+                  <span className="text-xs text-muted-foreground">{relativeDate(conversation.updatedAt)}</span>
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                  onClick={() => onDelete(conversation.id)}
+                  aria-label={`Supprimer la conversation "${conversation.title}"`}
+                >
+                  <X />
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ChatComponent({ className }: { className?: string }) {
-  const { messages, isLoading, error, sendMessage, cancelMessage, clearHistory, deleteMessage } = useChat();
+  const {
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    cancelMessage,
+    clearHistory,
+    deleteMessage,
+    conversations,
+    activeConversationId,
+    startNewConversation,
+    switchConversation,
+    deleteConversation,
+  } = useChat();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -110,12 +240,20 @@ export function ChatComponent({ className }: { className?: string }) {
             <Badge variant="info" size="sm">
               Mode démo
             </Badge>
-            <span className="text-xs text-muted-foreground">Assistant RH Lesaffre</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">Assistant RH Lesaffre</span>
           </div>
-          <Button variant="ghost" size="xs" onClick={clearHistory} disabled={messages.length === 0}>
-            <Trash2 />
-            Effacer l'historique
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon-xs" onClick={clearHistory} disabled={messages.length === 0} aria-label="Effacer cette conversation">
+              <Trash2 />
+            </Button>
+            <HistoryMenu
+              conversations={conversations}
+              activeId={activeConversationId}
+              onNew={startNewConversation}
+              onSelect={switchConversation}
+              onDelete={deleteConversation}
+            />
+          </div>
         </div>
 
         <div
