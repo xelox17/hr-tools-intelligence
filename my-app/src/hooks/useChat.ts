@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { API_BASE_URL, getToken } from "@/lib/api";
+import { PowerAppV2__Listerleslignes_Condition_R_ponse_R_ponse1Service as ChatFlow } from "@/generated";
 
 export type ChatRole = "user" | "assistant";
 
@@ -13,56 +13,31 @@ export interface ChatMessage {
   escalated?: boolean;
 }
 
-interface StreamEvent {
-  type: "text" | "done" | "error";
-  text?: string;
-  message?: string;
-  meta?: { escalated?: boolean };
-}
-
 const STORAGE_KEY = "hr-chat-history";
 const MAX_STORED_MESSAGES = 100;
-const HISTORY_SENT_TO_API = 10;
-const CHAT_ENDPOINT = `${API_BASE_URL}/api/ai/chat`;
+const HISTORY_SENT_TO_FLOW = 10;
 
 function createId(): string {
   return crypto.randomUUID();
 }
 
-/** Parses one SSE block ("data: {...}") into an event, ignoring anything else. */
-function parseEvent(block: string): StreamEvent | null {
-  const dataLine = block.split("\n").find((line) => line.startsWith("data: "));
-  if (!dataLine) return null;
-  try {
-    return JSON.parse(dataLine.slice("data: ".length)) as StreamEvent;
-  } catch {
-    return null;
-  }
-}
-
-async function readErrorMessage(response: Response): Promise<string> {
-  try {
-    const body = await response.json();
-    return body?.error?.message ?? `Erreur ${response.status}`;
-  } catch {
-    return `Erreur ${response.status}`;
-  }
-}
-
+/**
+ * Calls the HR chatbot through a Power Automate cloud flow instead of a
+ * direct fetch() to the Vercel API. The *published* Power Apps player
+ * sandboxes fetch() to an external origin (confirmed: login and the chat
+ * both failed with "Failed to fetch" there, even though both worked fine
+ * in a plain browser tab) — a registered cloud flow is the supported way
+ * for a code app to reach outside Power Platform. The flow itself just
+ * forwards to POST /api/ai/chat-sync (see that route's comment) and
+ * returns one `reply` string — no token-by-token streaming, since neither
+ * the flow's "Respond to a PowerApp or flow" action nor the generated
+ * data-source client support it. The UI fills in the full reply at once
+ * instead of word by word.
+ */
 export function useChat() {
   const [messages, setMessages, hydrated] = useLocalStorage<ChatMessage[]>(STORAGE_KEY, []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => () => abortRef.current?.abort(), []);
-
-  const updateMessage = useCallback(
-    (id: string, patch: (message: ChatMessage) => ChatMessage) => {
-      setMessages((prev) => prev.map((message) => (message.id === id ? patch(message) : message)));
-    },
-    [setMessages]
-  );
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -71,89 +46,48 @@ export function useChat() {
 
       const conversationHistory = messages
         .filter((message) => message.content)
-        .slice(-HISTORY_SENT_TO_API)
+        .slice(-HISTORY_SENT_TO_FLOW)
         .map(({ role, content: body }) => ({ role, content: body }));
 
       const userMessage: ChatMessage = { id: createId(), role: "user", content, createdAt: Date.now() };
-      const assistantMessage: ChatMessage = {
-        id: createId(),
-        role: "assistant",
-        content: "",
-        createdAt: Date.now(),
-      };
-
-      setMessages((prev) => [...prev, userMessage, assistantMessage].slice(-MAX_STORED_MESSAGES));
+      setMessages((prev) => [...prev, userMessage].slice(-MAX_STORED_MESSAGES));
       setError(null);
       setIsLoading(true);
 
-      const controller = new AbortController();
-      abortRef.current = controller;
-
       try {
-        const token = getToken();
-        const headers = new Headers({ "Content-Type": "application/json" });
-        if (token) headers.set("Authorization", `Bearer ${token}`);
-
-        const response = await fetch(CHAT_ENDPOINT, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ message: content, conversationHistory }),
-          signal: controller.signal,
+        const result = await ChatFlow.Run({
+          text: content,
+          text_1: JSON.stringify(conversationHistory),
         });
 
-        if (!response.ok) throw new Error(await readErrorMessage(response));
-        if (!response.body) throw new Error("Réponse vide du serveur.");
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const blocks = buffer.split("\n\n");
-          buffer = blocks.pop() ?? "";
-
-          for (const block of blocks) {
-            const event = parseEvent(block);
-            if (!event) continue;
-
-            if (event.type === "text" && event.text) {
-              const chunk = event.text;
-              updateMessage(assistantMessage.id, (m) => ({ ...m, content: m.content + chunk }));
-            } else if (event.type === "done" && event.meta?.escalated) {
-              updateMessage(assistantMessage.id, (m) => ({ ...m, escalated: true }));
-            } else if (event.type === "error") {
-              throw new Error(event.message ?? "Erreur de streaming.");
-            }
-          }
+        if (!result.success || !result.data?.reply) {
+          const message = result.error instanceof Error ? result.error.message : "Le flow n'a renvoyé aucune réponse.";
+          throw new Error(message);
         }
+
+        const assistantMessage: ChatMessage = {
+          id: createId(),
+          role: "assistant",
+          content: result.data.reply,
+          createdAt: Date.now(),
+        };
+        setMessages((prev) => [...prev, assistantMessage].slice(-MAX_STORED_MESSAGES));
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : "Une erreur est survenue.");
-        // Drop the placeholder if nothing was streamed before the failure.
-        setMessages((prev) => prev.filter((m) => m.id !== assistantMessage.id || m.content));
       } finally {
-        if (abortRef.current === controller) abortRef.current = null;
         setIsLoading(false);
       }
     },
-    [hydrated, isLoading, messages, setMessages, updateMessage]
+    [hydrated, isLoading, messages, setMessages]
   );
 
+  // No in-flight request to cancel (the flow call isn't cancellable once
+  // started) — this just resets the UI's loading state.
   const cancelMessage = useCallback(() => {
-    abortRef.current?.abort();
-    abortRef.current = null;
     setIsLoading(false);
-    // Drop an assistant placeholder that never received any text.
-    setMessages((prev) => prev.filter((m) => m.role !== "assistant" || m.content));
-  }, [setMessages]);
+  }, []);
 
   const clearHistory = useCallback(() => {
-    abortRef.current?.abort();
-    abortRef.current = null;
     setIsLoading(false);
     setError(null);
     setMessages([]);

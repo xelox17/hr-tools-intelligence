@@ -10,6 +10,19 @@
   "buildEntryPoint": "index.html",
   "localAppUrl": "http://localhost:3000",
   "logoPath": "Default",
-  "connectionReferences": {},
+  "connectionReferences": {
+    "a4c66a5e-62a9-4f4c-8dd0-8cf0d6dbdd9a": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+      "displayName": "Logic flows",
+      "dataSources": [
+        "powerappv2__listerleslignes_condition_r_ponse_r_ponse1"
+      ],
+      "workflowDetails": {
+        "workflowEntityId": "2baf9bff-49b7-f111-aaad-002248722262",
+        "workflowDisplayName": "PowerAppV2 -> Lister les lignes,Condition,Réponse,Réponse 1",
+        "workflowName": "ad6e08bc-dc03-4f2a-6d1f-e71f3b07435c"
+      }
+    }
+  },
   "databaseReferences": {}
 }
