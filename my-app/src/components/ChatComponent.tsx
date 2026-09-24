@@ -7,11 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { useChat, type ChatMessage, type Conversation } from "@/hooks/useChat";
 import { cn } from "@/lib/utils";
 
+// Aligned with what the assistant actually knows well: the 23-tool HR
+// catalog (Recruitment/Learning/Corporate/Payroll — see data/applications.ts),
+// framed as "which tool do I use for X" rather than a process it can't
+// actually run (it has no real leave balance or payroll data).
 const QUICK_SUGGESTIONS = [
-  { label: "Mes congés", prompt: "Combien de jours de congés ai-je et comment poser une demande ?" },
-  { label: "Ma paie", prompt: "Où puis-je consulter mes bulletins de paie ?" },
-  { label: "Télétravail", prompt: "Quelle est la politique de télétravail ?" },
-  { label: "Outils RH", prompt: "Quels outils RH sont à ma disposition ?" },
+  { label: "Recrutement", prompt: "Quel outil dois-je utiliser pour postuler à une offre en mobilité interne ?" },
+  { label: "Formation", prompt: "Où puis-je trouver le catalogue de formations disponibles ?" },
+  { label: "Mon dossier RH", prompt: "Quel outil me permet d'accéder à mon dossier employé et à l'organigramme ?" },
+  { label: "Paie", prompt: "Quel outil dois-je utiliser pour consulter mes bulletins de paie ?" },
 ];
 
 function relativeDate(timestamp: number): string {
