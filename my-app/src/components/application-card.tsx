@@ -13,7 +13,7 @@ const STATUS_BADGE = {
 } as const;
 
 export function ApplicationCard({ app }: { app: Application }) {
-  const { icon: Icon, border, badge } = getCategoryMeta(app.category);
+  const { icon: Icon, border, badge } = getCategoryMeta(app.subcategory);
   const status = app.status ?? "Active";
 
   return (
@@ -33,8 +33,7 @@ export function ApplicationCard({ app }: { app: Application }) {
       <CardContent className="flex flex-col gap-3">
         <p className="line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge)}>{app.category}</span>
-          {app.subcategory && <Badge variant="outline">{app.subcategory}</Badge>}
+          {app.subcategory && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge)}>{app.subcategory}</span>}
           {app.scope && <Badge variant="secondary">{app.scope}</Badge>}
         </div>
         <a

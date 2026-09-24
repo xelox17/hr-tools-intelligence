@@ -3,12 +3,12 @@ import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ApplicationCard } from "@/components/application-card";
-import { applications, categories, hrSubcategories, type Application } from "@/data/applications";
+import { applications, hrSubcategories, type Application } from "@/data/applications";
 import { cn } from "@/lib/utils";
 
-const HR_CATEGORY = "Human Resources";
 type Status = NonNullable<Application["status"]>;
 const STATUSES: Status[] = ["Active", "Planned", "Deprecated"];
+const SCOPES = ["Corporate", "Local"] as const;
 
 function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -22,52 +22,42 @@ function matches(app: Application, query: string): boolean {
     .some((field) => field.toLowerCase().includes(q));
 }
 
+/**
+ * HR tools only (see data/applications.ts's header comment) — this portal
+ * is open to the whole ~6,000-employee workforce, so it surfaces what every
+ * employee needs (recruitment, learning, payroll, core HR), not internal
+ * Finance/Sales/R&D/etc. tooling. With a single category, there is no
+ * top-level category filter — just the HR sub-category, scope and status.
+ */
 export function CatalogView() {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string | null>(null);
   const [subcategories, setSubcategories] = useState<string[]>([]);
   const [scopes, setScopes] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
 
-  const isHr = category === HR_CATEGORY;
-
-  // Scopes only make sense within HR (it's the only category that sets them).
-  const availableScopes = useMemo(
-    () => Array.from(new Set(applications.filter((a) => a.category === HR_CATEGORY && a.scope).map((a) => a.scope as string))),
-    []
-  );
-
   const filtered = useMemo(() => {
     return applications.filter((app) => {
-      if (category && app.category !== category) return false;
-      if (isHr && subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
-      if (isHr && scopes.length && !scopes.includes(app.scope ?? "")) return false;
+      if (subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
+      if (scopes.length && !scopes.includes(app.scope ?? "")) return false;
       if (statuses.length && !statuses.includes(app.status ?? "Active")) return false;
       return matches(app, query);
     });
-  }, [query, category, subcategories, scopes, statuses, isHr]);
+  }, [query, subcategories, scopes, statuses]);
 
-  const hasActiveFilters = query.trim().length > 0 || category !== null || subcategories.length > 0 || scopes.length > 0 || statuses.length > 0;
+  const hasActiveFilters = query.trim().length > 0 || subcategories.length > 0 || scopes.length > 0 || statuses.length > 0;
 
   function clearFilters() {
     setQuery("");
-    setCategory(null);
     setSubcategories([]);
     setScopes([]);
     setStatuses([]);
   }
 
-  function selectCategory(next: string | null) {
-    setCategory(next);
-    setSubcategories([]);
-    setScopes([]);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-bold text-foreground">Lesaffre Applications Hub</h1>
-        <p className="text-sm text-muted-foreground">Discover and access all Lesaffre business applications.</p>
+        <h1 className="font-heading text-2xl font-bold text-foreground">HR Tools Portal</h1>
+        <p className="text-sm text-muted-foreground">Discover and access every HR application available to you.</p>
       </header>
 
       <div className="relative w-full sm:max-w-sm">
@@ -83,23 +73,11 @@ export function CatalogView() {
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
         <FilterGroup
           label="Category"
-          options={categories}
-          selected={category ? [category] : []}
-          onToggle={(value) => selectCategory(category === value ? null : value)}
+          options={[...hrSubcategories]}
+          selected={subcategories}
+          onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
         />
-
-        {isHr && (
-          <>
-            <FilterGroup
-              label="HR sub-category"
-              options={hrSubcategories}
-              selected={subcategories}
-              onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
-            />
-            <FilterGroup label="Scope" options={availableScopes} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
-          </>
-        )}
-
+        <FilterGroup label="Scope" options={[...SCOPES]} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
         <FilterGroup
           label="Status"
           options={STATUSES}
@@ -120,7 +98,7 @@ export function CatalogView() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {applications.length} applications
+        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {applications.length} HR tools
       </p>
 
       {filtered.length > 0 ? (
@@ -133,7 +111,7 @@ export function CatalogView() {
         </ul>
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="font-heading text-base font-semibold text-foreground">No applications found</p>
+          <p className="font-heading text-base font-semibold text-foreground">No tools found</p>
           <p className="text-sm text-muted-foreground">Try adjusting your filters.</p>
         </div>
       )}

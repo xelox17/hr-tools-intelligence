@@ -2,12 +2,11 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Bot, LayoutGrid, LibraryBig, ShieldCheck, Tags } from "lucide-react";
 import { KpiCard } from "@/components/kpi-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { applications, categories } from "@/data/applications";
+import { applications, hrSubcategories } from "@/data/applications";
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 
 // No charts here (dropped, per the group's "keep it simple" request) — the
-// catalog's own category/sub-category/scope/status filters already cover
-// this data.
+// catalog's own sub-category/scope/status filters already cover this data.
 const QUICK_ACCESS = [
   {
     href: "/ai-assistant",
@@ -17,8 +16,8 @@ const QUICK_ACCESS = [
   },
   {
     href: "/catalog",
-    title: "Applications Hub",
-    description: "Parcourez et recherchez toutes les applications Lesaffre.",
+    title: "Catalogue des outils",
+    description: "Parcourez et recherchez les outils RH du groupe.",
     icon: LibraryBig,
   },
 ];
@@ -51,7 +50,7 @@ export default function HomePage() {
               to="/catalog"
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/70 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-white/60 focus-visible:outline-none"
             >
-              Voir les applications
+              Voir le catalogue
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -89,21 +88,21 @@ export default function HomePage() {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="font-heading text-xl font-bold text-foreground">Portefeuille d'applications</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Portefeuille d'outils RH</h2>
           <p className="text-sm text-muted-foreground">
-            Overview of every Lesaffre business application, across all departments.
+            Overview of the HR tools portfolio across the Lesaffre group.
           </p>
         </div>
         <Link to="/catalog" className="text-sm font-medium text-accent link-underline">
-          Parcourir les applications →
+          Parcourir le catalogue →
         </Link>
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total applications" value={applications.length} icon={LayoutGrid} />
-        <KpiCard label="Categories" value={categories.length} icon={Tags} />
+        <KpiCard label="Total tools" value={applications.length} icon={LayoutGrid} />
+        <KpiCard label="Categories" value={hrSubcategories.length} icon={Tags} />
         <KpiCard label="Active" value={activeCount} icon={ShieldCheck} />
-        <KpiCard label="HR applications" value={applications.filter((a) => a.category === "Human Resources").length} icon={Bot} />
+        <KpiCard label="Corporate scope" value={applications.filter((a) => a.scope === "Corporate").length} icon={Bot} />
       </section>
     </div>
   );
