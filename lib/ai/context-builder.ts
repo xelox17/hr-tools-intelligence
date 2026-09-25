@@ -52,7 +52,7 @@ const DEMO_EMPLOYEES: Record<string, EmployeeProfile> = {
     firstName: 'Jean',
     lastName: 'Recruiter',
     department: 'Recruitment',
-    country: 'France',
+    country: 'Belgique',
     language: 'français',
     managerName: 'Marie DuPont',
   },
@@ -61,8 +61,8 @@ const DEMO_EMPLOYEES: Record<string, EmployeeProfile> = {
     firstName: 'Sophie',
     lastName: 'Manager',
     department: 'IT',
-    country: 'France',
-    language: 'français',
+    country: 'USA',
+    language: 'English',
     managerName: null,
   },
   'user-employee': {
@@ -70,8 +70,8 @@ const DEMO_EMPLOYEES: Record<string, EmployeeProfile> = {
     firstName: 'Thomas',
     lastName: 'Employee',
     department: 'IT',
-    country: 'France',
-    language: 'français',
+    country: 'Brésil',
+    language: 'português',
     managerName: 'Sophie Manager',
   },
 };
@@ -96,6 +96,9 @@ const DEMO_TOOLS: HrToolInfo[] = [
   { id: 'hr-learn-002', name: 'TIPI Group', category: 'Learning', description: 'Portail de formation centralisé pour tout le groupe.', countries: [], url: 'https://tipi.lesaffre.app/' },
   { id: 'hr-learn-003', name: 'TIPI L.int', category: 'Learning', description: 'Portail de formation local pour les sites locaux.', countries: ['France'], url: 'https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a' },
   { id: 'hr-learn-004', name: 'CTR', category: 'Learning', description: 'Inscription aux sessions de formation de l’Institut Léon Lesaffre.', countries: [], url: 'https://corporate-training-registration.lesaffre.com/' },
+  { id: 'hr-learn-005', name: 'TIPI L.int', category: 'Learning', description: 'Portail de formation local pour les sites locaux.', countries: ['Belgique'], url: 'https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a' },
+  { id: 'hr-learn-006', name: 'TIPI L.int', category: 'Learning', description: 'Portail de formation local pour les sites locaux.', countries: ['USA'], url: 'https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a' },
+  { id: 'hr-learn-007', name: 'TIPI L.int', category: 'Learning', description: 'Portail de formation local pour les sites locaux.', countries: ['Brésil'], url: 'https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a' },
   // Corporate
   { id: 'hr-corp-001', name: 'LINK', category: 'Corporate', description: 'Système Core HR du groupe — référentiel central des données employés et organisationnelles (dossier employé, congés, organigramme).', countries: [], url: 'https://link.lesaffre.com/' },
   { id: 'hr-corp-002', name: 'User Management Tool - HR', category: 'Corporate', description: 'Gestion des identités et accès numériques tout au long du cycle de vie employé (équipes RH).', countries: [], url: 'https://apps.powerapps.com/play/f9b107b8-46b1-403d-b33b-333aabdd9fdb' },
@@ -131,7 +134,19 @@ const DEMO_POLICIES: HrPolicy[] = [
     id: 'leave-us',
     title: 'Paid Time Off',
     summary: 'PTO accrual per site policy; requests go through the local HR team.',
-    countries: ['United States'],
+    countries: ['USA'],
+  },
+  {
+    id: 'leave-be',
+    title: 'Congés annuels (Belgique)',
+    summary: 'Congés payés selon le droit belge et les accords locaux ; la demande se fait via TIPI L.int.',
+    countries: ['Belgique'],
+  },
+  {
+    id: 'leave-br',
+    title: 'Férias anuais (Brasil)',
+    summary: 'Férias remuneradas conforme a legislação trabalhista brasileira e os acordos locais da Lesaffre.',
+    countries: ['Brésil'],
   },
 ];
 
@@ -144,12 +159,22 @@ export function filterByCountry<T extends { countries: string[] }>(items: T[], c
   return items.filter((item) => item.countries.length === 0 || item.countries.includes(country));
 }
 
-function loadDemoContext(employeeId: string | undefined): ContextData {
+// Codes the frontend's language switcher can send (my-app/src/lib/i18n) —
+// mapped to the label the system prompt shows the model ("Réponds dans la
+// langue ... : <label>"), not the UI's own translation keys.
+const LANGUAGE_LABELS: Record<string, string> = {
+  fr: 'français',
+  en: 'English',
+  es: 'español',
+};
+
+function loadDemoContext(employeeId: string | undefined, languageCode?: string): ContextData {
   const employee = (employeeId && DEMO_EMPLOYEES[employeeId]) || DEMO_EMPLOYEE;
   const country = employee.country;
+  const language = (languageCode && LANGUAGE_LABELS[languageCode]) || employee.language;
   return {
     mode: 'demo',
-    employee,
+    employee: { ...employee, language },
     tools: filterByCountry(DEMO_TOOLS, country),
     policies: filterByCountry(DEMO_POLICIES, country),
     contacts: DEMO_CONTACTS,
@@ -158,7 +183,8 @@ function loadDemoContext(employeeId: string | undefined): ContextData {
 
 export async function buildContextData(
   employeeId: string | undefined,
-  mode: ContextMode = 'demo'
+  mode: ContextMode = 'demo',
+  languageCode?: string
 ): Promise<ContextData> {
   if (mode === 'production') {
     if (!employeeId) throw new Error('employeeId is required in production mode.');
@@ -167,5 +193,5 @@ export async function buildContextData(
   }
   // Demo mode: one of the 5 known demo accounts if recognized, else the
   // generic "Jean Dupont" fallback (e.g. a caller that sends no employeeId).
-  return loadDemoContext(employeeId);
+  return loadDemoContext(employeeId, languageCode);
 }

@@ -3,27 +3,32 @@ import { ChevronRight, Menu, Moon, Sun } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { UserProfileDropdown } from "@/components/auth/UserProfileDropdown";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
-const BREADCRUMB_LABELS: Record<string, string> = {
-  "/catalog": "Catalog",
-  "/ai-assistant": "AI Assistant",
+const BREADCRUMB_LABEL_KEYS: Record<string, string> = {
+  "/catalog": "nav.catalog",
+  "/ai-assistant": "nav.aiAssistant",
+  "/admin": "nav.admin",
 };
 
 function Breadcrumbs() {
   const { pathname } = useLocation();
-  if (pathname === "/") return <span className="text-sm font-medium text-foreground">Home</span>;
+  const { t } = useLanguage();
+  if (pathname === "/") return <span className="text-sm font-medium text-foreground">{t("nav.home")}</span>;
 
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = segments.reduce<{ href: string; label: string }[]>((acc, segment) => {
     const href = `${acc[acc.length - 1]?.href ?? ""}/${segment}`;
-    const label = BREADCRUMB_LABELS[href] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const key = BREADCRUMB_LABEL_KEYS[href];
+    const label = key ? t(key) : segment.charAt(0).toUpperCase() + segment.slice(1);
     return [...acc, { href, label }];
   }, []);
 
   return (
     <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
       <Link to="/" className="shrink-0 text-muted-foreground hover:text-foreground">
-        Home
+        {t("nav.home")}
       </Link>
       {crumbs.map((crumb, i) => (
         <span key={crumb.href} className="flex min-w-0 items-center gap-1.5">
@@ -84,6 +89,7 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        <LanguageSwitcher />
         <ThemeToggle />
         <UserProfileDropdown />
       </div>

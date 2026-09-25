@@ -20,6 +20,8 @@ export interface ChatHistoryMessage {
 export interface ValidatedChatInput {
   message: string;
   employeeId?: string;
+  /** UI language code ("fr" | "en" | "es") sent by the client's language switcher — see lib/ai/context-builder.ts's LANGUAGE_LABELS. */
+  language?: string;
   conversationHistory: ChatHistoryMessage[];
 }
 
@@ -83,7 +85,7 @@ export function validateChatInput(body: unknown): ValidationResult {
     return { ok: false, code: 'BAD_REQUEST', message: 'Request body must be a JSON object.' };
   }
 
-  const { message, employeeId, conversationHistory } = body as Record<string, unknown>;
+  const { message, employeeId, language, conversationHistory } = body as Record<string, unknown>;
 
   if (typeof message !== 'string' || message.trim().length === 0) {
     return { ok: false, code: 'BAD_REQUEST', message: 'A non-empty "message" is required.' };
@@ -100,6 +102,9 @@ export function validateChatInput(body: unknown): ValidationResult {
   }
   if (employeeId !== undefined && typeof employeeId !== 'string') {
     return { ok: false, code: 'BAD_REQUEST', message: '"employeeId" must be a string.' };
+  }
+  if (language !== undefined && typeof language !== 'string') {
+    return { ok: false, code: 'BAD_REQUEST', message: '"language" must be a string.' };
   }
 
   let history: ChatHistoryMessage[] = [];
@@ -124,7 +129,12 @@ export function validateChatInput(body: unknown): ValidationResult {
 
   return {
     ok: true,
-    value: { message: message.trim(), employeeId, conversationHistory: history },
+    value: {
+      message: message.trim(),
+      employeeId,
+      language: typeof language === 'string' ? language : undefined,
+      conversationHistory: history,
+    },
   };
 }
 

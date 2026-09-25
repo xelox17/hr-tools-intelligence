@@ -156,6 +156,52 @@ export const applications: Application[] = [
     targetAudience: "All Employees, HR",
     status: "Active"
   },
+  // Local instances of TIPI L.int for a handful of countries beyond France —
+  // demonstrates country-filtered visibility across the group's real
+  // geographic footprint (55+ countries) without inventing unrelated tools.
+  // Same underlying portal per country; only the URL differs in production.
+  {
+    id: "hr-learn-005",
+    title: "TIPI L.int",
+    category: "Human Resources",
+    subcategory: "Learning",
+    scope: "Local",
+    country: "Belgique",
+    roleLevel: "All",
+    description: "Local Training Portal - Training management for local sites",
+    url: "https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a",
+    vendor: "Power Apps",
+    targetAudience: "All Employees",
+    status: "Active"
+  },
+  {
+    id: "hr-learn-006",
+    title: "TIPI L.int",
+    category: "Human Resources",
+    subcategory: "Learning",
+    scope: "Local",
+    country: "USA",
+    roleLevel: "All",
+    description: "Local Training Portal - Training management for local sites",
+    url: "https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a",
+    vendor: "Power Apps",
+    targetAudience: "All Employees",
+    status: "Active"
+  },
+  {
+    id: "hr-learn-007",
+    title: "TIPI L.int",
+    category: "Human Resources",
+    subcategory: "Learning",
+    scope: "Local",
+    country: "Brésil",
+    roleLevel: "All",
+    description: "Local Training Portal - Training management for local sites",
+    url: "https://apps.powerapps.com/play/e/default-4a949dba-72f4-4fa8-a3eb-6cce3fab9022/a/6fc59930-9165-47e7-bc1f-af1e28422b3a",
+    vendor: "Power Apps",
+    targetAudience: "All Employees",
+    status: "Active"
+  },
 
   // CORPORATE (7)
   {

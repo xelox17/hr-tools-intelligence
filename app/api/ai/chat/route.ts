@@ -32,10 +32,16 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`;
 
-const ESCALATION_REPLY =
-  'Cette question relève d’un sujet sensible : je vous invite à contacter directement votre équipe RH, qui pourra vous répondre de façon confidentielle.\n\nEmail : hr@lesaffre.com';
-const SENSITIVE_DATA_NOTICE =
-  'Votre message semble contenir des données personnelles sensibles. Pour votre sécurité, évitez de les partager ici.\n\n';
+const ESCALATION_REPLY: Record<string, string> = {
+  fr: 'Cette question relève d’un sujet sensible : je vous invite à contacter directement votre équipe RH, qui pourra vous répondre de façon confidentielle.\n\nEmail : hr@lesaffre.com',
+  en: 'This question touches on a sensitive topic: please contact your HR team directly — they can answer confidentially.\n\nEmail: hr@lesaffre.com',
+  es: 'Esta pregunta trata un tema sensible: le invitamos a contactar directamente a su equipo de RR. HH., que podrá responderle de forma confidencial.\n\nCorreo: hr@lesaffre.com',
+};
+const SENSITIVE_DATA_NOTICE: Record<string, string> = {
+  fr: 'Votre message semble contenir des données personnelles sensibles. Pour votre sécurité, évitez de les partager ici.\n\n',
+  en: 'Your message seems to contain sensitive personal data. For your safety, avoid sharing it here.\n\n',
+  es: 'Su mensaje parece contener datos personales sensibles. Por su seguridad, evite compartirlos aquí.\n\n',
+};
 
 const encoder = new TextEncoder();
 function sseEvent(payload: Record<string, unknown>): Uint8Array {
@@ -179,9 +185,10 @@ export async function POST(request: NextRequest) {
     return errorResponse(validation.code, validation.message, null, 400);
   }
   const input = validation.value;
+  const lang = input.language && input.language in ESCALATION_REPLY ? input.language : 'fr';
 
   try {
-    const context = await buildContextData(input.employeeId, 'demo');
+    const context = await buildContextData(input.employeeId, 'demo', input.language);
     const systemPrompt = buildSystemPrompt(context);
 
     const escalation = checkEscalation(input.message);
@@ -200,12 +207,12 @@ export async function POST(request: NextRequest) {
     // Escalation skips the LLM call entirely — cheaper and matches the
     // "route straight to a human for sensitive topics" intent.
     const stream = escalation.escalate
-      ? streamStaticReply(ESCALATION_REPLY, meta)
+      ? streamStaticReply(ESCALATION_REPLY[lang], meta)
       : streamGeminiReply(
           systemPrompt,
           input.conversationHistory,
           input.message,
-          sensitiveTypes.length > 0 ? SENSITIVE_DATA_NOTICE : '',
+          sensitiveTypes.length > 0 ? SENSITIVE_DATA_NOTICE[lang] : '',
           meta
         );
 

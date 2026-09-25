@@ -6,6 +6,7 @@ import { ApplicationCard } from "@/components/application-card";
 import { hrSubcategories, type Application } from "@/data/applications";
 import { useToolsCatalog } from "@/hooks/useToolsCatalog";
 import { useAuth } from "@/lib/auth/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { filterVisibleTools } from "@/lib/visibility";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ function matches(app: Application, query: string): boolean {
  */
 export function CatalogView() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { tools: allTools } = useToolsCatalog();
   const [query, setQuery] = useState("");
   const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -60,8 +62,8 @@ export function CatalogView() {
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-bold text-foreground">HR Tools Portal</h1>
-        <p className="text-sm text-muted-foreground">Discover and access every HR application available to you.</p>
+        <h1 className="font-heading text-2xl font-bold text-foreground">{t("catalog.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("catalog.subtitle")}</p>
       </header>
 
       <div className="relative w-full sm:max-w-sm">
@@ -69,19 +71,19 @@ export function CatalogView() {
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search title, description, vendor, audience..."
+          placeholder={t("catalog.searchPlaceholder")}
           className="h-10 border-border bg-card pl-9"
         />
       </div>
 
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
         <FilterGroup
-          label="Category"
+          label={t("catalog.filterCategory")}
           options={[...hrSubcategories]}
           selected={subcategories}
           onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
         />
-        <FilterGroup label="Scope" options={[...SCOPES]} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
+        <FilterGroup label={t("catalog.filterScope")} options={[...SCOPES]} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
 
         {hasActiveFilters && (
           <button
@@ -90,14 +92,14 @@ export function CatalogView() {
             className="inline-flex w-fit items-center gap-1 text-xs font-medium text-accent link-underline"
           >
             <X className="h-3.5 w-3.5" />
-            Clear all filters
+            {t("catalog.clearFilters")}
           </button>
         )}
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {visibleTools.length} HR tools
-        {hiddenCount > 0 && <span> · {hiddenCount} not shown (country/role restricted)</span>}
+        {t("catalog.showing", { count: filtered.length, total: visibleTools.length })}
+        {hiddenCount > 0 && <span> · {t("catalog.hiddenCount", { count: hiddenCount })}</span>}
       </p>
 
       {filtered.length > 0 ? (
@@ -110,8 +112,8 @@ export function CatalogView() {
         </ul>
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="font-heading text-base font-semibold text-foreground">No tools found</p>
-          <p className="text-sm text-muted-foreground">Try adjusting your filters.</p>
+          <p className="font-heading text-base font-semibold text-foreground">{t("catalog.noResults.title")}</p>
+          <p className="text-sm text-muted-foreground">{t("catalog.noResults.subtitle")}</p>
         </div>
       )}
     </div>

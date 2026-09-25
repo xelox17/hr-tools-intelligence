@@ -3,25 +3,26 @@ import { Link, useLocation } from "react-router-dom";
 import { Bot, Home, LibraryBig, Settings, X, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { useAuth } from "@/lib/auth/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   /** Also active for a sub-route (e.g. a tool detail page under /catalog). */
   matchPrefix?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/catalog", label: "Catalog", icon: LibraryBig, matchPrefix: true },
-  { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
+  { href: "/", labelKey: "nav.home", icon: Home },
+  { href: "/catalog", labelKey: "nav.catalog", icon: LibraryBig, matchPrefix: true },
+  { href: "/ai-assistant", labelKey: "nav.aiAssistant", icon: Bot },
 ];
 
 /** PDD's Admin RH persona (§3): only ADMIN sees this — everyone else has no way to reach /admin from the UI (the route itself also redirects them away). */
-const ADMIN_NAV_ITEM: NavItem = { href: "/admin", label: "Admin", icon: Settings };
+const ADMIN_NAV_ITEM: NavItem = { href: "/admin", labelKey: "nav.admin", icon: Settings };
 
 /** The logo doubles as the link to Home. */
 function Logo({ priority = false, onNavigate }: { priority?: boolean; onNavigate?: () => void }) {
@@ -47,6 +48,7 @@ function Footer() {
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const { role } = useAuth();
+  const { t } = useLanguage();
   const items = role === "ADMIN" ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
   return (
     <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2">
@@ -69,7 +71,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <Icon className="h-4 w-4" />
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}

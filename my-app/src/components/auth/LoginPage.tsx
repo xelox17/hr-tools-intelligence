@@ -5,11 +5,13 @@ import { RoleBadge } from "@/components/auth/RoleBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { DEMO_USERS } from "@/lib/auth/demo-users";
 import { ROLE_DESCRIPTIONS } from "@/lib/auth/roles";
 
 export function LoginPage() {
   const { login, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -20,7 +22,7 @@ export function LoginPage() {
     const result = await login(userId);
     setPendingId(null);
     if (result.ok) navigate("/");
-    else setError(result.error ? `Sign-in failed: ${result.error}` : "Sign-in is unavailable right now. Please try again later.");
+    else setError(result.error ? `${t("login.signInFailed")} ${result.error}` : t("login.signInUnavailable"));
   }
 
   return (
@@ -28,13 +30,11 @@ export function LoginPage() {
       <header className="flex flex-col items-center gap-4 text-center">
         <BrandLogo className="w-36" priority />
         <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">Sign in to the HR portal</h1>
-          <p className="mx-auto max-w-xl text-sm text-muted-foreground">
-            Demo mode: pick an account to explore the tool catalog. No password is needed here; in production, sign-in goes through the company SSO.
-          </p>
+          <h1 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">{t("login.title")}</h1>
+          <p className="mx-auto max-w-xl text-sm text-muted-foreground">{t("login.subtitle")}</p>
           {user && (
             <p className="text-xs text-muted-foreground">
-              Currently signed in as <strong className="text-foreground">{user.name}</strong>.
+              {t("login.currentlySignedIn")} <strong className="text-foreground">{user.name}</strong>.
             </p>
           )}
         </div>
@@ -61,7 +61,7 @@ export function LoginPage() {
                 <p className="text-sm text-muted-foreground">{ROLE_DESCRIPTIONS[demoUser.role]}</p>
                 <div className="mt-auto">
                   <Button size="lg" onClick={() => void handleLogin(demoUser.id)} disabled={pendingId === demoUser.id}>
-                    {pendingId === demoUser.id ? "Signing in…" : `Sign in as ${demoUser.name.split(" ")[0]}`}
+                    {pendingId === demoUser.id ? t("login.signingIn") : `${t("login.signInAs")} ${demoUser.name.split(" ")[0]}`}
                   </Button>
                 </div>
               </CardContent>

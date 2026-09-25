@@ -34,28 +34,42 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-const ESCALATION_REPLY =
-  'Cette question relève d’un sujet sensible : je vous invite à contacter directement votre équipe RH, qui pourra vous répondre de façon confidentielle.\n\nEmail : hr@lesaffre.com';
-const SENSITIVE_DATA_NOTICE =
-  'Votre message semble contenir des données personnelles sensibles. Pour votre sécurité, évitez de les partager ici.\n\n';
+const ESCALATION_REPLY: Record<string, string> = {
+  fr: 'Cette question relève d’un sujet sensible : je vous invite à contacter directement votre équipe RH, qui pourra vous répondre de façon confidentielle.\n\nEmail : hr@lesaffre.com',
+  en: 'This question touches on a sensitive topic: please contact your HR team directly — they can answer confidentially.\n\nEmail: hr@lesaffre.com',
+  es: 'Esta pregunta trata un tema sensible: le invitamos a contactar directamente a su equipo de RR. HH., que podrá responderle de forma confidencial.\n\nCorreo: hr@lesaffre.com',
+};
+const SENSITIVE_DATA_NOTICE: Record<string, string> = {
+  fr: 'Votre message semble contenir des données personnelles sensibles. Pour votre sécurité, évitez de les partager ici.\n\n',
+  en: 'Your message seems to contain sensitive personal data. For your safety, avoid sharing it here.\n\n',
+  es: 'Su mensaje parece contener datos personales sensibles. Por su seguridad, evite compartirlos aquí.\n\n',
+};
 
 interface FlowHistoryEntry {
   role: 'user' | 'assistant';
   content: string;
 }
 
-// Matches an "EID:<id>|" prefix the Power Apps code app's useChat.ts embeds
-// in the message text. The Power Automate flow this route is built for only
-// has two trigger inputs (message, conversationHistory) — adding a third
-// ("employeeId") means re-editing that flow's designer by hand again, which
-// was the single most time-consuming part of wiring this up. Piggybacking
-// the id on the message string avoids that without changing the flow.
-const EMPLOYEE_ID_PREFIX = /^EID:([\w-]+)\|/;
+// Matches "EID:<id>|" and "LANG:<code>|" prefixes the Power Apps code app's
+// useChat.ts embeds in the message text (any order, either optional). The
+// Power Automate flow this route is built for only has two trigger inputs
+// (message, conversationHistory) — adding a third means re-editing that
+// flow's designer by hand again, which was the single most time-consuming
+// part of wiring this up. Piggybacking both on the message string avoids
+// that without changing the flow.
+const PREFIX_RE = /^(EID|LANG):([\w-]+)\|/;
 
-function extractEmployeeId(message: string): { message: string; employeeId?: string } {
-  const match = EMPLOYEE_ID_PREFIX.exec(message);
-  if (!match) return { message };
-  return { message: message.slice(match[0].length), employeeId: match[1] };
+function extractPrefixes(message: string): { message: string; employeeId?: string; language?: string } {
+  let rest = message;
+  let employeeId: string | undefined;
+  let language: string | undefined;
+  let match: RegExpExecArray | null;
+  while ((match = PREFIX_RE.exec(rest))) {
+    if (match[1] === 'EID') employeeId = match[2];
+    else language = match[2];
+    rest = rest.slice(match[0].length);
+  }
+  return { message: rest, employeeId, language };
 }
 
 /** Power Automate's "message" input is one string — accept plain text or a JSON-stringified history array. */
@@ -93,20 +107,24 @@ export async function POST(request: NextRequest) {
   }
 
   const { conversationHistory: rawHistory, message: rawMessage, ...rest } = (rawBody ?? {}) as Record<string, unknown>;
-  const { message, employeeId: embeddedEmployeeId } = extractEmployeeId(typeof rawMessage === 'string' ? rawMessage : '');
+  const { message, employeeId: embeddedEmployeeId, language: embeddedLanguage } = extractPrefixes(
+    typeof rawMessage === 'string' ? rawMessage : ''
+  );
   const validation = validateChatInput({
     ...rest,
     message,
     employeeId: embeddedEmployeeId ?? rest.employeeId,
+    language: embeddedLanguage ?? rest.language,
     conversationHistory: parseHistory(rawHistory),
   });
   if (!validation.ok) {
     return errorResponse(validation.code, validation.message, null, 400);
   }
   const input = validation.value;
+  const lang = input.language && input.language in ESCALATION_REPLY ? input.language : 'fr';
 
   try {
-    const context = await buildContextData(input.employeeId, 'demo');
+    const context = await buildContextData(input.employeeId, 'demo', input.language);
     const systemPrompt = buildSystemPrompt(context);
 
     const escalation = checkEscalation(input.message);
@@ -122,7 +140,7 @@ export async function POST(request: NextRequest) {
     console.info('[ai-chat-sync]', buildSafeLogMeta(input, meta));
 
     if (escalation.escalate) {
-      return successResponse({ reply: ESCALATION_REPLY, meta });
+      return successResponse({ reply: ESCALATION_REPLY[lang], meta });
     }
 
     const contents = [
@@ -152,7 +170,7 @@ export async function POST(request: NextRequest) {
     const data = await geminiRes.json();
     const parts = data?.candidates?.[0]?.content?.parts;
     const text = Array.isArray(parts) ? parts.map((p: { text?: string }) => p.text ?? '').join('') : '';
-    const prefix = sensitiveTypes.length > 0 ? SENSITIVE_DATA_NOTICE : '';
+    const prefix = sensitiveTypes.length > 0 ? SENSITIVE_DATA_NOTICE[lang] : '';
 
     return successResponse({
       reply: prefix + (text || 'Désolé, je n’ai pas pu générer de réponse. Réessayez.'),

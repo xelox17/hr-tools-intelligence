@@ -6,6 +6,7 @@ import { hrSubcategories } from "@/data/applications";
 import { useToolsCatalog } from "@/hooks/useToolsCatalog";
 import { useToolAnalytics } from "@/hooks/useToolAnalytics";
 import { useAuth } from "@/lib/auth/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { filterVisibleTools } from "@/lib/visibility";
 import { LESAFFRE_THEME } from "@/lib/config/branding";
 
@@ -14,20 +15,21 @@ import { LESAFFRE_THEME } from "@/lib/config/branding";
 const QUICK_ACCESS = [
   {
     href: "/ai-assistant",
-    title: "Assistant RH IA",
-    description: "Posez vos questions RH à tout moment (mode démo).",
+    titleKey: "home.quickAccess.aiTitle",
+    descKey: "home.quickAccess.aiDesc",
     icon: Bot,
   },
   {
     href: "/catalog",
-    title: "Catalogue des outils",
-    description: "Parcourez et recherchez les outils RH du groupe.",
+    titleKey: "home.quickAccess.catalogTitle",
+    descKey: "home.quickAccess.catalogDesc",
     icon: LibraryBig,
   },
 ];
 
 export default function HomePage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { tools } = useToolsCatalog();
   const { topTools, totalOpens } = useToolAnalytics();
   const visibleTools = filterVisibleTools(tools, user);
@@ -46,7 +48,7 @@ export default function HomePage() {
             {LESAFFRE_THEME.productName}
           </span>
           <h1 className="font-heading text-3xl font-bold sm:text-4xl">
-            {user ? `Bienvenue, ${user.name.split(" ")[0]} !` : "Bienvenue au portail RH Lesaffre"}
+            {user ? t("home.hero.welcome", { name: user.name.split(" ")[0] }) : t("home.hero.welcomeGeneric")}
           </h1>
           <p className="text-base text-white/90 sm:text-lg">{LESAFFRE_THEME.tagline}</p>
           <div className="mt-2 flex flex-wrap gap-3">
@@ -55,13 +57,13 @@ export default function HomePage() {
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-lesaffre-blue transition-colors hover:bg-white/90 focus-visible:ring-3 focus-visible:ring-white/60 focus-visible:outline-none"
             >
               <Bot className="h-4 w-4" />
-              Ouvrir l'assistant RH
+              {t("home.hero.openAssistant")}
             </Link>
             <Link
               to="/catalog"
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-white/70 px-4 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-white/60 focus-visible:outline-none"
             >
-              Voir le catalogue
+              {t("home.hero.viewCatalog")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -70,10 +72,10 @@ export default function HomePage() {
 
       <section aria-labelledby="quick-access" className="flex flex-col gap-4">
         <h2 id="quick-access" className="font-heading text-lg font-semibold text-foreground">
-          Accès rapide
+          {t("home.quickAccess.heading")}
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {QUICK_ACCESS.map(({ href, title, description, icon: Icon }) => (
+          {QUICK_ACCESS.map(({ href, titleKey, descKey, icon: Icon }) => (
             <Link
               key={href}
               to={href}
@@ -86,9 +88,9 @@ export default function HomePage() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="font-heading text-base font-semibold text-foreground group-hover:text-primary">
-                      {title}
+                      {t(titleKey)}
                     </span>
-                    <span className="text-sm text-muted-foreground">{description}</span>
+                    <span className="text-sm text-muted-foreground">{t(descKey)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -99,21 +101,19 @@ export default function HomePage() {
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="font-heading text-xl font-bold text-foreground">Portefeuille d'outils RH</h2>
-          <p className="text-sm text-muted-foreground">
-            Overview of the HR tools portfolio available to you.
-          </p>
+          <h2 className="font-heading text-xl font-bold text-foreground">{t("home.portfolio.heading")}</h2>
+          <p className="text-sm text-muted-foreground">{t("home.portfolio.subtitle")}</p>
         </div>
         <Link to="/catalog" className="text-sm font-medium text-accent link-underline">
-          Parcourir le catalogue →
+          {t("home.portfolio.browseCatalog")}
         </Link>
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total tools" value={visibleTools.length} icon={LayoutGrid} />
-        <KpiCard label="Categories" value={hrSubcategories.length} icon={Tags} />
-        <KpiCard label="Active" value={activeCount} icon={ShieldCheck} />
-        <KpiCard label="Corporate scope" value={visibleTools.filter((a) => a.scope === "Corporate").length} icon={Bot} />
+        <KpiCard label={t("home.kpi.totalTools")} value={visibleTools.length} icon={LayoutGrid} />
+        <KpiCard label={t("home.kpi.categories")} value={hrSubcategories.length} icon={Tags} />
+        <KpiCard label={t("home.kpi.active")} value={activeCount} icon={ShieldCheck} />
+        <KpiCard label={t("home.kpi.corporateScope")} value={visibleTools.filter((a) => a.scope === "Corporate").length} icon={Bot} />
       </section>
 
       {/* Lightweight stand-in for the PDD's "cible" Power BI usage dashboard
@@ -122,18 +122,16 @@ export default function HomePage() {
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
-          <h2 className="font-heading text-lg font-semibold text-foreground">Outils les plus consultés</h2>
+          <h2 className="font-heading text-lg font-semibold text-foreground">{t("home.analytics.heading")}</h2>
         </div>
         <Card className="border-border">
           <CardContent>
             {mostOpened.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucun clic enregistré pour l'instant — ouvrez un outil depuis le catalogue pour commencer à voir des statistiques.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("home.analytics.empty")}</p>
             ) : (
               <ul className="flex flex-col divide-y divide-border">
                 {mostOpened.map(({ id, count }) => {
-                  const tool = tools.find((t) => t.id === id);
+                  const tool = tools.find((tl) => tl.id === id);
                   const max = mostOpened[0]?.count ?? 1;
                   return (
                     <li key={id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
@@ -142,17 +140,14 @@ export default function HomePage() {
                         <div className="h-full rounded-full bg-primary" style={{ width: `${(count / max) * 100}%` }} />
                       </div>
                       <span className="w-16 shrink-0 text-right text-xs text-muted-foreground">
-                        {count} clic{count > 1 ? "s" : ""}
+                        {t("home.analytics.clicks", { count })}
                       </span>
                     </li>
                   );
                 })}
               </ul>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">
-              {totalOpens} ouverture{totalOpens > 1 ? "s" : ""} enregistrée{totalOpens > 1 ? "s" : ""} dans ce navigateur (démo — un vrai
-              tableau de bord Power BI nécessiterait Dataverse/une base de données partagée).
-            </p>
+            <p className="mt-3 text-xs text-muted-foreground">{t("home.analytics.footer", { count: totalOpens })}</p>
           </CardContent>
         </Card>
       </section>

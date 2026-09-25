@@ -5,28 +5,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useChat, type ChatMessage, type Conversation } from "@/hooks/useChat";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
 // Aligned with what the assistant actually knows well: the 23-tool HR
 // catalog (Recruitment/Learning/Corporate/Payroll — see data/applications.ts),
 // framed as "which tool do I use for X" rather than a process it can't
-// actually run (it has no real leave balance or payroll data).
-const QUICK_SUGGESTIONS = [
-  { label: "Recrutement", prompt: "Quel outil dois-je utiliser pour postuler à une offre en mobilité interne ?" },
-  { label: "Formation", prompt: "Où puis-je trouver le catalogue de formations disponibles ?" },
-  { label: "Mon dossier RH", prompt: "Quel outil me permet d'accéder à mon dossier employé et à l'organigramme ?" },
-  { label: "Paie", prompt: "Quel outil dois-je utiliser pour consulter mes bulletins de paie ?" },
+// actually run (it has no real leave balance or payroll data). Labels and
+// prompts come from the translation dictionary so they follow the UI's
+// selected language, and the prompt itself is sent to the assistant so it
+// answers in kind.
+const QUICK_SUGGESTION_KEYS = [
+  { labelKey: "chat.suggestion.recruitment.label", promptKey: "chat.suggestion.recruitment.prompt" },
+  { labelKey: "chat.suggestion.training.label", promptKey: "chat.suggestion.training.prompt" },
+  { labelKey: "chat.suggestion.myHr.label", promptKey: "chat.suggestion.myHr.prompt" },
+  { labelKey: "chat.suggestion.payroll.label", promptKey: "chat.suggestion.payroll.prompt" },
 ];
 
-function relativeDate(timestamp: number): string {
+function relativeDate(timestamp: number, t: (key: string, vars?: Record<string, string | number>) => string): string {
   const diffMs = Date.now() - timestamp;
   const diffMin = Math.round(diffMs / 60000);
-  if (diffMin < 1) return "à l'instant";
-  if (diffMin < 60) return `il y a ${diffMin} min`;
+  if (diffMin < 1) return t("chat.relative.now");
+  if (diffMin < 60) return t("chat.relative.minutes", { n: diffMin });
   const diffH = Math.round(diffMin / 60);
-  if (diffH < 24) return `il y a ${diffH} h`;
+  if (diffH < 24) return t("chat.relative.hours", { n: diffH });
   const diffD = Math.round(diffH / 24);
-  return `il y a ${diffD} j`;
+  return t("chat.relative.days", { n: diffD });
 }
 
 function MessageBubble({
@@ -39,6 +43,7 @@ function MessageBubble({
   onDelete: (id: string) => void;
 }) {
   const isUser = message.role === "user";
+  const { t } = useLanguage();
 
   return (
     <div className={cn("group flex gap-2.5", isUser && "flex-row-reverse")}>
@@ -67,14 +72,14 @@ function MessageBubble({
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           ) : (
-            isStreaming && <span className="text-muted-foreground">Réflexion en cours…</span>
+            isStreaming && <span className="text-muted-foreground">{t("chat.thinking")}</span>
           )}
         </div>
 
         {message.escalated && (
           <Badge variant="warning" size="sm">
             <AlertTriangle />
-            Contactez l'équipe RH
+            {t("chat.escalated")}
           </Badge>
         )}
       </div>
@@ -84,7 +89,7 @@ function MessageBubble({
         size="icon-xs"
         className="self-start opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         onClick={() => onDelete(message.id)}
-        aria-label="Supprimer le message"
+        aria-label={t("chat.deleteMessage")}
       >
         <X />
       </Button>
@@ -108,6 +113,7 @@ function HistoryMenu({
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!open) return;
@@ -133,10 +139,10 @@ function HistoryMenu({
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label="Historique des conversations"
+        aria-label={t("chat.history")}
       >
         <History />
-        Historique
+        {t("chat.history")}
       </Button>
 
       {open && (
@@ -153,13 +159,13 @@ function HistoryMenu({
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-accent hover:bg-muted"
           >
             <MessageSquarePlus className="h-4 w-4" />
-            Nouvelle conversation
+            {t("chat.newConversation")}
           </button>
 
           {conversations.length > 0 && <div role="separator" className="my-1 h-px shrink-0 bg-border" />}
 
           {conversations.length === 0 ? (
-            <p className="px-2 py-4 text-center text-xs text-muted-foreground">Aucune conversation pour l'instant.</p>
+            <p className="px-2 py-4 text-center text-xs text-muted-foreground">{t("chat.noConversations")}</p>
           ) : (
             conversations.map((conversation) => (
               <div
@@ -178,14 +184,14 @@ function HistoryMenu({
                   className="flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md px-1.5 py-1 text-left"
                 >
                   <span className="w-full truncate font-medium text-foreground">{conversation.title}</span>
-                  <span className="text-xs text-muted-foreground">{relativeDate(conversation.updatedAt)}</span>
+                  <span className="text-xs text-muted-foreground">{relativeDate(conversation.updatedAt, t)}</span>
                 </button>
                 <Button
                   variant="ghost"
                   size="icon-xs"
                   className="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={() => onDelete(conversation.id)}
-                  aria-label={`Supprimer la conversation "${conversation.title}"`}
+                  aria-label={t("chat.deleteConversationNamed", { title: conversation.title })}
                 >
                   <X />
                 </Button>
@@ -213,6 +219,7 @@ export function ChatComponent({ className }: { className?: string }) {
     switchConversation,
     deleteConversation,
   } = useChat();
+  const { t } = useLanguage();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -242,12 +249,12 @@ export function ChatComponent({ className }: { className?: string }) {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Badge variant="info" size="sm">
-              Mode démo
+              {t("chat.demoMode")}
             </Badge>
-            <span className="hidden text-xs text-muted-foreground sm:inline">Assistant RH Lesaffre</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">{t("chat.assistantName")}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon-xs" onClick={clearHistory} disabled={messages.length === 0} aria-label="Effacer cette conversation">
+            <Button variant="ghost" size="icon-xs" onClick={clearHistory} disabled={messages.length === 0} aria-label={t("chat.clearConversation")}>
               <Trash2 />
             </Button>
             <HistoryMenu
@@ -265,25 +272,23 @@ export function ChatComponent({ className }: { className?: string }) {
           className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1"
           role="log"
           aria-live="polite"
-          aria-label="Conversation"
+          aria-label={t("chat.conversationLog")}
         >
           {messages.length === 0 ? (
             <div className="m-auto flex max-w-sm flex-col items-center gap-3 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-primary ring-1 ring-border">
                 <Bot className="h-6 w-6" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Bonjour ! Posez une question RH ou choisissez une suggestion.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("chat.emptyGreeting")}</p>
               <div className="flex flex-wrap justify-center gap-2">
-                {QUICK_SUGGESTIONS.map((suggestion) => (
+                {QUICK_SUGGESTION_KEYS.map((suggestion) => (
                   <Button
-                    key={suggestion.label}
+                    key={suggestion.labelKey}
                     variant="outline"
                     size="sm"
-                    onClick={() => submit(suggestion.prompt)}
+                    onClick={() => submit(t(suggestion.promptKey))}
                   >
-                    {suggestion.label}
+                    {t(suggestion.labelKey)}
                   </Button>
                 ))}
               </div>
@@ -319,16 +324,16 @@ export function ChatComponent({ className }: { className?: string }) {
             onKeyDown={handleKeyDown}
             rows={2}
             maxLength={5000}
-            placeholder="Votre question… (Entrée pour envoyer, Maj+Entrée pour un retour à la ligne)"
-            aria-label="Votre message"
+            placeholder={t("chat.placeholder")}
+            aria-label={t("chat.yourMessage")}
             className="min-h-10 flex-1 resize-none rounded-xl border border-input bg-transparent px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
           />
           {isLoading ? (
-            <Button type="button" variant="outline" size="icon-lg" onClick={cancelMessage} aria-label="Arrêter">
+            <Button type="button" variant="outline" size="icon-lg" onClick={cancelMessage} aria-label={t("chat.stop")}>
               <Square />
             </Button>
           ) : (
-            <Button type="submit" size="icon-lg" disabled={!input.trim()} aria-label="Envoyer">
+            <Button type="submit" size="icon-lg" disabled={!input.trim()} aria-label={t("chat.send")}>
               <Send />
             </Button>
           )}

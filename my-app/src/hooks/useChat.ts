@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useAuth } from "@/lib/auth/hooks";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { PowerAppV2__Listerleslignes_Condition_R_ponse_R_ponse1Service as ChatFlow } from "@/generated";
 
 export type ChatRole = "user" | "assistant";
@@ -54,6 +55,7 @@ function newConversation(): Conversation {
  */
 export function useChat() {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const [conversations, setConversations, hydrated] = useLocalStorage<Conversation[]>(CONVERSATIONS_KEY, []);
   const [activeId, setActiveId] = useLocalStorage<string | null>(ACTIVE_ID_KEY, null);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,11 +103,13 @@ export function useChat() {
 
       try {
         // The registered flow's trigger only has two inputs (message,
-        // conversationHistory) — the signed-in demo account's id rides
-        // along as a prefix the backend strips (see chat-sync/route.ts),
-        // so the assistant addresses the actual logged-in account instead
-        // of always defaulting to a generic persona.
-        const messageForFlow = user ? `EID:${user.id}|${content}` : content;
+        // conversationHistory) — the signed-in demo account's id and the
+        // UI's selected language both ride along as prefixes the backend
+        // strips (see chat-sync/route.ts's extractPrefixes), so the
+        // assistant addresses the actual logged-in account in the language
+        // the user is currently browsing in, instead of always defaulting
+        // to a generic French persona.
+        const messageForFlow = `${user ? `EID:${user.id}|` : ""}LANG:${language}|${content}`;
         const result = await ChatFlow.Run({
           text: messageForFlow,
           text_1: JSON.stringify(conversationHistory),
