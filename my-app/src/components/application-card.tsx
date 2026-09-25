@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getCategoryMeta } from "@/lib/category-meta";
 import { useToolAnalytics } from "@/hooks/useToolAnalytics";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { translateAppDescription } from "@/data/application-translations";
 import { cn } from "@/lib/utils";
 import type { Application } from "@/data/applications";
 
@@ -17,8 +18,9 @@ const STATUS_BADGE = {
 export function ApplicationCard({ app }: { app: Application }) {
   const { icon: Icon, border, badge } = getCategoryMeta(app.subcategory);
   const { recordOpen } = useToolAnalytics();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const status = app.status ?? "Active";
+  const description = translateAppDescription(app.id, app.description, language);
 
   return (
     <Card className={cn("h-full border-l-4 border-border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg", border)}>
@@ -35,7 +37,7 @@ export function ApplicationCard({ app }: { app: Application }) {
         {app.vendor && <p className="text-xs text-muted-foreground">{app.vendor}</p>}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <p className="line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
+        <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
         <div className="flex flex-wrap items-center gap-1.5">
           {app.subcategory && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge)}>{t(`subcategory.${app.subcategory}`)}</span>}
           {app.scope && <Badge variant="secondary">{t(`scope.${app.scope}`)}</Badge>}

@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ApplicationCard } from "@/components/application-card";
 import { hrSubcategories, type Application } from "@/data/applications";
+import { translateAppDescription } from "@/data/application-translations";
 import { useToolsCatalog } from "@/hooks/useToolsCatalog";
 import { useAuth } from "@/lib/auth/hooks";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { LanguageCode } from "@/lib/i18n/translations";
 import { filterVisibleTools } from "@/lib/visibility";
 import { cn } from "@/lib/utils";
 
@@ -16,10 +18,11 @@ function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 }
 
-function matches(app: Application, query: string): boolean {
+function matches(app: Application, query: string, language: LanguageCode): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return [app.title, app.description, app.vendor, app.targetAudience]
+  const description = translateAppDescription(app.id, app.description, language);
+  return [app.title, description, app.vendor, app.targetAudience]
     .filter((field): field is string => Boolean(field))
     .some((field) => field.toLowerCase().includes(q));
 }
@@ -34,7 +37,7 @@ function matches(app: Application, query: string): boolean {
  */
 export function CatalogView() {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { tools: allTools } = useToolsCatalog();
   const [query, setQuery] = useState("");
   const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -47,9 +50,9 @@ export function CatalogView() {
     return visibleTools.filter((app) => {
       if (subcategories.length && !subcategories.includes(app.subcategory ?? "")) return false;
       if (scopes.length && !scopes.includes(app.scope ?? "")) return false;
-      return matches(app, query);
+      return matches(app, query, language);
     });
-  }, [visibleTools, query, subcategories, scopes]);
+  }, [visibleTools, query, subcategories, scopes, language]);
 
   const hasActiveFilters = query.trim().length > 0 || subcategories.length > 0 || scopes.length > 0;
 
