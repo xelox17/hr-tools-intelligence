@@ -77,6 +77,53 @@ export const translations: Record<string, Record<LanguageCode, string>> = {
   "catalog.hiddenCount": { fr: "{{count}} non affiché(s) (restriction pays/rôle)", en: "{{count}} not shown (country/role restricted)", es: "{{count}} no mostrada(s) (restricción de país/rol)" },
   "catalog.noResults.title": { fr: "Aucun outil trouvé", en: "No tools found", es: "No se encontraron herramientas" },
   "catalog.noResults.subtitle": { fr: "Essayez d'ajuster vos filtres.", en: "Try adjusting your filters.", es: "Intente ajustar sus filtros." },
+  "catalog.open": { fr: "Ouvrir", en: "Open", es: "Abrir" },
+
+  // Data-value labels (Application.status / .subcategory / .scope) — the
+  // underlying value (English) stays the filter/matching key; only the
+  // displayed label is translated.
+  "status.Active": { fr: "Actif", en: "Active", es: "Activo" },
+  "status.Planned": { fr: "Prévu", en: "Planned", es: "Planificado" },
+  "status.Deprecated": { fr: "Obsolète", en: "Deprecated", es: "Obsoleto" },
+  "subcategory.Recruitment": { fr: "Recrutement", en: "Recruitment", es: "Contratación" },
+  "subcategory.Learning": { fr: "Formation", en: "Learning", es: "Formación" },
+  "subcategory.Corporate": { fr: "Groupe", en: "Corporate", es: "Corporativo" },
+  "subcategory.Payroll": { fr: "Paie", en: "Payroll", es: "Nómina" },
+  "scope.Corporate": { fr: "Groupe", en: "Corporate", es: "Corporativo" },
+  "scope.Local": { fr: "Local", en: "Local", es: "Local" },
+  "role.ADMIN": { fr: "Admin", en: "Admin", es: "Admin" },
+  "role.RH_MANAGER": { fr: "Manager RH", en: "RH Manager", es: "Gerente de RR. HH." },
+  "role.RECRUITER": { fr: "Recruteur", en: "Recruiter", es: "Reclutador" },
+  "role.MANAGER": { fr: "Manager", en: "Manager", es: "Gerente" },
+  "role.EMPLOYEE": { fr: "Employé", en: "Employee", es: "Empleado" },
+  "role.desc.ADMIN": { fr: "Accès complet au portail.", en: "Full access to the portal.", es: "Acceso completo al portal." },
+  "role.desc.RH_MANAGER": { fr: "Membre de l'équipe RH explorant le catalogue d'outils.", en: "HR team member exploring the tool catalog.", es: "Miembro del equipo de RR. HH. explorando el catálogo de herramientas." },
+  "role.desc.RECRUITER": { fr: "Membre de l'équipe recrutement explorant le catalogue d'outils.", en: "Recruitment team member exploring the tool catalog.", es: "Miembro del equipo de contratación explorando el catálogo de herramientas." },
+  "role.desc.MANAGER": { fr: "Manager d'équipe explorant le catalogue d'outils.", en: "People manager exploring the tool catalog.", es: "Gerente de equipo explorando el catálogo de herramientas." },
+  "role.desc.EMPLOYEE": { fr: "Employé explorant le catalogue d'outils.", en: "Employee exploring the tool catalog.", es: "Empleado explorando el catálogo de herramientas." },
+
+  // AI assistant page
+  "assistant.pageTitle": { fr: "Assistant RH IA", en: "AI HR Assistant", es: "Asistente de RR. HH. con IA" },
+  "assistant.pageSubtitle": { fr: "Posez vos questions RH et retrouvez rapidement le bon outil ou la bonne politique.", en: "Ask your HR questions and quickly find the right tool or policy.", es: "Haga sus preguntas de RR. HH. y encuentre rápidamente la herramienta o la política adecuada." },
+  "assistant.highlight.available.title": { fr: "Disponible 24/7", en: "Available 24/7", es: "Disponible 24/7" },
+  "assistant.highlight.available.text": { fr: "Une réponse à tout moment, sans attendre l'ouverture des bureaux.", en: "An answer at any time, without waiting for office hours.", es: "Una respuesta en cualquier momento, sin esperar la apertura de oficinas." },
+  "assistant.highlight.multilingual.title": { fr: "Multilingue", en: "Multilingual", es: "Multilingüe" },
+  "assistant.highlight.multilingual.text": { fr: "Posez votre question dans votre langue.", en: "Ask your question in your own language.", es: "Haga su pregunta en su propio idioma." },
+  "assistant.highlight.secure.title": { fr: "Sécurisé", en: "Secure", es: "Seguro" },
+  "assistant.highlight.secure.text": { fr: "Vos échanges restent sur votre appareil ; aucune donnée sensible n'est demandée.", en: "Your exchanges stay on your device; no sensitive data is requested.", es: "Sus intercambios permanecen en su dispositivo; no se solicitan datos sensibles." },
+  "assistant.faq.heading": { fr: "Questions fréquentes", en: "Frequently asked questions", es: "Preguntas frecuentes" },
+  "assistant.faq.q1": { fr: "Que puis-je demander à l'assistant ?", en: "What can I ask the assistant?", es: "¿Qué puedo preguntarle al asistente?" },
+  "assistant.faq.a1": { fr: "Congés, paie, télétravail, formation, outils RH et avantages : des informations générales et des indications pour trouver le bon outil.", en: "Leave, payroll, remote work, training, HR tools and benefits: general information and pointers to find the right tool.", es: "Vacaciones, nómina, teletrabajo, formación, herramientas de RR. HH. y beneficios: información general y orientación para encontrar la herramienta adecuada." },
+  "assistant.faq.q2": { fr: "L'assistant remplace-t-il l'équipe RH ?", en: "Does the assistant replace the HR team?", es: "¿El asistente reemplaza al equipo de RR. HH.?" },
+  "assistant.faq.a2": { fr: "Non. Pour les sujets sensibles (santé, disciplinaire, litige de paie), il vous oriente vers l'équipe RH.", en: "No. For sensitive topics (health, disciplinary, payroll disputes), it directs you to the HR team.", es: "No. Para temas sensibles (salud, disciplinarios, disputas de nómina), lo dirige al equipo de RR. HH." },
+  "assistant.faq.q3": { fr: "Mon historique est-il conservé ?", en: "Is my history kept?", es: "¿Se conserva mi historial?" },
+  "assistant.faq.a3": { fr: "Il est enregistré localement dans votre navigateur. Vous pouvez l'effacer à tout moment.", en: "It is stored locally in your browser. You can clear it at any time.", es: "Se guarda localmente en su navegador. Puede borrarlo en cualquier momento." },
+  "assistant.contactHr": { fr: "Contacter les RH", en: "Contact HR", es: "Contactar a RR. HH." },
+
+  // User profile dropdown
+  "profile.department": { fr: "Département : {{value}}", en: "Department: {{value}}", es: "Departamento: {{value}}" },
+  "profile.logout": { fr: "Déconnexion", en: "Logout", es: "Cerrar sesión" },
+  "profile.menu": { fr: "Menu du compte, rôle {{role}}", en: "Account menu, role {{role}}", es: "Menú de la cuenta, rol {{role}}" },
 
   // Chat
   "chat.demoMode": { fr: "Mode démo", en: "Demo mode", es: "Modo demo" },

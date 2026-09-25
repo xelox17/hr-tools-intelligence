@@ -4,7 +4,7 @@ import { ChevronDown, LogOut } from "lucide-react";
 import { RoleBadge } from "@/components/auth/RoleBadge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth/hooks";
-import { ROLE_LABELS } from "@/lib/auth/roles";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 function initials(name: string): string {
   return name
@@ -18,6 +18,7 @@ function initials(name: string): string {
 /** Header menu: profile summary and logout. */
 export function UserProfileDropdown() {
   const { user, role, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +67,7 @@ export function UserProfileDropdown() {
           <RoleBadge role={role} />
         </span>
         <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" aria-hidden />
-        <span className="sr-only">Account menu, role {ROLE_LABELS[role]}</span>
+        <span className="sr-only">{t("profile.menu", { role: t(`role.${role}`) })}</span>
       </button>
 
       {open && (
@@ -80,12 +81,12 @@ export function UserProfileDropdown() {
               <RoleBadge role={role} />
             </div>
             <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-            {user.department && <span className="text-xs text-muted-foreground">Department: {user.department}</span>}
+            {user.department && <span className="text-xs text-muted-foreground">{t("profile.department", { value: user.department })}</span>}
           </section>
 
           <Button variant="outline" onClick={() => void handleLogout()} className="justify-start gap-2">
             <LogOut />
-            Logout
+            {t("profile.logout")}
           </Button>
         </div>
       )}

@@ -82,8 +82,15 @@ export function CatalogView() {
           options={[...hrSubcategories]}
           selected={subcategories}
           onToggle={(value) => setSubcategories((prev) => toggle(prev, value))}
+          labelFor={(value) => t(`subcategory.${value}`)}
         />
-        <FilterGroup label={t("catalog.filterScope")} options={[...SCOPES]} selected={scopes} onToggle={(value) => setScopes((prev) => toggle(prev, value))} />
+        <FilterGroup
+          label={t("catalog.filterScope")}
+          options={[...SCOPES]}
+          selected={scopes}
+          onToggle={(value) => setScopes((prev) => toggle(prev, value))}
+          labelFor={(value) => t(`scope.${value}`)}
+        />
 
         {hasActiveFilters && (
           <button
@@ -125,11 +132,13 @@ function FilterGroup({
   options,
   selected,
   onToggle,
+  labelFor = (value) => value,
 }: {
   label: string;
   options: string[];
   selected: string[];
   onToggle: (value: string) => void;
+  labelFor?: (value: string) => string;
 }) {
   if (options.length === 0) return null;
   return (
@@ -144,7 +153,7 @@ function FilterGroup({
                 variant={active ? "default" : "outline"}
                 className={cn("cursor-pointer px-3 py-1 text-xs transition-colors", active ? "bg-accent text-accent-foreground" : "hover:bg-muted")}
               >
-                {option}
+                {labelFor(option)}
               </Badge>
             </button>
           );

@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth/hooks";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { DEMO_USERS } from "@/lib/auth/demo-users";
-import { ROLE_DESCRIPTIONS } from "@/lib/auth/roles";
 
 export function LoginPage() {
   const { login, user } = useAuth();
@@ -58,7 +57,7 @@ export function LoginPage() {
                   </div>
                   <RoleBadge role={demoUser.role} />
                 </div>
-                <p className="text-sm text-muted-foreground">{ROLE_DESCRIPTIONS[demoUser.role]}</p>
+                <p className="text-sm text-muted-foreground">{t(`role.desc.${demoUser.role}`)}</p>
                 <div className="mt-auto">
                   <Button size="lg" onClick={() => void handleLogin(demoUser.id)} disabled={pendingId === demoUser.id}>
                     {pendingId === demoUser.id ? t("login.signingIn") : `${t("login.signInAs")} ${demoUser.name.split(" ")[0]}`}

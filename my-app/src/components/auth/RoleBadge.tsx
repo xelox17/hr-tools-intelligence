@@ -1,4 +1,4 @@
-import { ROLE_LABELS } from "@/lib/auth/roles";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { UserRole } from "@/lib/auth/types";
 import { cn } from "@/lib/utils";
 
@@ -8,5 +8,6 @@ export function roleClass(role: UserRole): string {
 }
 
 export function RoleBadge({ role, className }: { role: UserRole; className?: string }) {
-  return <span className={cn("role-badge", roleClass(role), className)}>{ROLE_LABELS[role]}</span>;
+  const { t } = useLanguage();
+  return <span className={cn("role-badge", roleClass(role), className)}>{t(`role.${role}`)}</span>;
 }

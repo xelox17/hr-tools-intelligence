@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { getCategoryMeta } from "@/lib/category-meta";
 import { useToolAnalytics } from "@/hooks/useToolAnalytics";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import type { Application } from "@/data/applications";
 
@@ -16,6 +17,7 @@ const STATUS_BADGE = {
 export function ApplicationCard({ app }: { app: Application }) {
   const { icon: Icon, border, badge } = getCategoryMeta(app.subcategory);
   const { recordOpen } = useToolAnalytics();
+  const { t } = useLanguage();
   const status = app.status ?? "Active";
 
   return (
@@ -26,7 +28,7 @@ export function ApplicationCard({ app }: { app: Application }) {
             <Icon className="h-5 w-5" />
           </div>
           <Badge variant={STATUS_BADGE[status]} size="sm">
-            {status}
+            {t(`status.${status}`)}
           </Badge>
         </div>
         <CardTitle className="text-base">{app.title}</CardTitle>
@@ -35,8 +37,8 @@ export function ApplicationCard({ app }: { app: Application }) {
       <CardContent className="flex flex-col gap-3">
         <p className="line-clamp-2 text-sm text-muted-foreground">{app.description}</p>
         <div className="flex flex-wrap items-center gap-1.5">
-          {app.subcategory && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge)}>{app.subcategory}</span>}
-          {app.scope && <Badge variant="secondary">{app.scope}</Badge>}
+          {app.subcategory && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", badge)}>{t(`subcategory.${app.subcategory}`)}</span>}
+          {app.scope && <Badge variant="secondary">{t(`scope.${app.scope}`)}</Badge>}
         </div>
         <a
           href={app.url}
@@ -45,7 +47,7 @@ export function ApplicationCard({ app }: { app: Application }) {
           onClick={() => recordOpen(app.id)}
           className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-1 justify-center gap-1.5")}
         >
-          Open
+          {t("catalog.open")}
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </CardContent>
