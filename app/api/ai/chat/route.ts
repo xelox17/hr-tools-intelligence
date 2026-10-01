@@ -42,6 +42,13 @@ const SENSITIVE_DATA_NOTICE: Record<string, string> = {
   en: 'Your message seems to contain sensitive personal data. For your safety, avoid sharing it here.\n\n',
   es: 'Su mensaje parece contener datos personales sensibles. Por su seguridad, evite compartirlos aquí.\n\n',
 };
+// See chat-sync/route.ts's QUOTA_EXCEEDED_REPLY for why a 429 gets its own
+// message instead of the generic AI_UNAVAILABLE one.
+const QUOTA_EXCEEDED_REPLY: Record<string, string> = {
+  fr: "L'assistant a atteint son quota de requêtes gratuit pour aujourd'hui. Il sera de nouveau disponible demain, ou contactez l'administrateur pour passer sur un plan payant.",
+  en: 'The assistant has reached its free daily request quota. It will be available again tomorrow, or contact the administrator to move to a paid plan.',
+  es: 'El asistente ha alcanzado su cuota gratuita de solicitudes por hoy. Volverá a estar disponible mañana, o contacte al administrador para pasar a un plan de pago.',
+};
 
 const encoder = new TextEncoder();
 function sseEvent(payload: Record<string, unknown>): Uint8Array {
@@ -70,7 +77,8 @@ function streamGeminiReply(
   history: GeminiHistoryEntry[],
   message: string,
   prefix: string,
-  meta: Record<string, unknown>
+  meta: Record<string, unknown>,
+  lang: string
 ): ReadableStream<Uint8Array> {
   return new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -85,29 +93,46 @@ function streamGeminiReply(
           { role: 'user', parts: [{ text: message }] },
         ];
 
-        const geminiRes = await fetch(GEMINI_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY! },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents,
-            generationConfig: {
-              maxOutputTokens: 1024,
-              temperature: 0.7,
-              // Gemini 3's models "think" before answering by default, which
-              // measured ~50s of latency on a two-sentence HR question — most
-              // of it invisible reasoning, not the visible reply. This is a
-              // chat widget, not a research tool: disabling it cut the same
-              // request to ~11s with no visible loss in answer quality.
-              thinkingConfig: { thinkingBudget: 0 },
-            },
-          }),
+        const geminiBody = JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents,
+          generationConfig: {
+            maxOutputTokens: 1024,
+            temperature: 0.7,
+            // Gemini 3's models "think" before answering by default, which
+            // measured ~50s of latency on a two-sentence HR question — most
+            // of it invisible reasoning, not the visible reply. This is a
+            // chat widget, not a research tool: disabling it cut the same
+            // request to ~11s with no visible loss in answer quality.
+            thinkingConfig: { thinkingBudget: 0 },
+          },
         });
+
+        const requestOptions = {
+          method: 'POST' as const,
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY! },
+          body: geminiBody,
+        };
+
+        // See chat-sync/route.ts: one retry for a transient 503 only, never
+        // for 429 (daily quota — retrying wastes another call on the same error).
+        let geminiRes = await fetch(GEMINI_ENDPOINT, requestOptions);
+        if (geminiRes.status === 503) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          geminiRes = await fetch(GEMINI_ENDPOINT, requestOptions);
+        }
+
+        if (geminiRes.status === 429) {
+          controller.enqueue(sseEvent({ type: 'text', text: QUOTA_EXCEEDED_REPLY[lang] ?? QUOTA_EXCEEDED_REPLY.fr }));
+          controller.enqueue(sseEvent({ type: 'done', meta: { ...meta, quotaExceeded: true } }));
+          controller.close();
+          return;
+        }
 
         if (!geminiRes.ok || !geminiRes.body) {
           const errText = await geminiRes.text().catch(() => '');
           console.error('[ai-chat] Gemini error:', geminiRes.status, errText.slice(0, 500));
-          controller.enqueue(sseEvent({ type: 'error', message: 'Le service IA est momentanément indisponible.' }));
+          controller.enqueue(sseEvent({ type: 'error', message: 'Le service IA est momentanément indisponible. Réessayez dans un instant.' }));
           controller.close();
           return;
         }
@@ -213,7 +238,8 @@ export async function POST(request: NextRequest) {
           input.conversationHistory,
           input.message,
           sensitiveTypes.length > 0 ? SENSITIVE_DATA_NOTICE[lang] : '',
-          meta
+          meta,
+          lang
         );
 
     return new Response(stream, {

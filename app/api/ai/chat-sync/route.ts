@@ -44,6 +44,15 @@ const SENSITIVE_DATA_NOTICE: Record<string, string> = {
   en: 'Your message seems to contain sensitive personal data. For your safety, avoid sharing it here.\n\n',
   es: 'Su mensaje parece contener datos personales sensibles. Por su seguridad, evite compartirlos aquí.\n\n',
 };
+// Distinct from AI_UNAVAILABLE: a 429 here means the (free-tier) Gemini key's
+// daily request quota is exhausted, not a transient outage — retrying
+// immediately would just get the same error. Telling the user this directly
+// avoids it looking like "the chatbot is broken" when it's a quota ceiling.
+const QUOTA_EXCEEDED_REPLY: Record<string, string> = {
+  fr: "L'assistant a atteint son quota de requêtes gratuit pour aujourd'hui. Il sera de nouveau disponible demain, ou contactez l'administrateur pour passer sur un plan payant.",
+  en: 'The assistant has reached its free daily request quota. It will be available again tomorrow, or contact the administrator to move to a paid plan.',
+  es: 'El asistente ha alcanzado su cuota gratuita de solicitudes por hoy. Volverá a estar disponible mañana, o contacte al administrador para pasar a un plan de pago.',
+};
 
 interface FlowHistoryEntry {
   role: 'user' | 'assistant';
@@ -151,20 +160,38 @@ export async function POST(request: NextRequest) {
       { role: 'user', parts: [{ text: input.message }] },
     ];
 
-    const geminiRes = await fetch(GEMINI_ENDPOINT, {
+    const geminiBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents,
+      generationConfig: { maxOutputTokens: 1024, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } },
+    });
+
+    // One retry, only for a transient "model overloaded" 503 — Gemini's free
+    // tier returns this under load fairly often, and a short wait usually
+    // clears it. A 429 (daily quota exhausted) is not retried: the quota
+    // resets once a day, so an immediate retry just burns another call for
+    // the same error.
+    let geminiRes = await fetch(GEMINI_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: { maxOutputTokens: 1024, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } },
-      }),
+      body: geminiBody,
     });
+    if (geminiRes.status === 503) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      geminiRes = await fetch(GEMINI_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+        body: geminiBody,
+      });
+    }
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text().catch(() => '');
       console.error('[ai-chat-sync] Gemini error:', geminiRes.status, errText.slice(0, 500));
-      return errorResponse('AI_UNAVAILABLE', 'Le service IA est momentanément indisponible.', null, 502);
+      if (geminiRes.status === 429) {
+        return successResponse({ reply: QUOTA_EXCEEDED_REPLY[lang], meta: { ...meta, quotaExceeded: true } });
+      }
+      return errorResponse('AI_UNAVAILABLE', 'Le service IA est momentanément indisponible. Réessayez dans un instant.', null, 502);
     }
 
     const data = await geminiRes.json();
