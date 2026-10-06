@@ -8,10 +8,10 @@
     - If the target site does not exist yet, creates it first as a
       SharePoint Communication site (via the tenant admin center), waits
       for provisioning to finish, then continues.
-    - Connects to the target SharePoint site via Azure AD device code
-      sign-in (you'll be shown a short code and a URL to open in any
-      browser - no credentials are stored in this script, no app
-      registration needed).
+    - Connects to the target SharePoint site via Azure AD, with no
+      auth switch forced - PnP.PowerShell picks its own default sign-in
+      flow for your environment (no credentials are stored in this
+      script, no app registration needed).
     - Creates the "HR_Tools_Data" list if it does not already exist.
     - Ensures the required columns exist (Title already exists by default):
         URL          Hyperlink
@@ -59,18 +59,31 @@ if (-not $AdminUrl) {
     $AdminUrl = $SiteUrl -replace "^(https://[^.]+)\.sharepoint\.com.*$", '$1-admin.sharepoint.com'
 }
 
-# --- 1. Make sure PnP.PowerShell is available -------------------------------
+# --- 1. Make sure PnP.PowerShell is installed AND recent ---------------------
+# Both -Interactive and -DeviceLogin failing with "Specified method is not
+# supported" points at a stale or conflicting PnP.PowerShell install rather
+# than the auth method itself, so this forces an update, not just a presence
+# check, before anything else runs.
 
-if (-not (Get-Module -ListAvailable -Name PnP.PowerShell)) {
+$minVersion = [version]"2.0.0"
+$installed = Get-Module -ListAvailable -Name PnP.PowerShell | Sort-Object Version -Descending | Select-Object -First 1
+
+if (-not $installed) {
     Write-Host "Installing PnP.PowerShell for the current user..." -ForegroundColor Cyan
     Install-Module -Name PnP.PowerShell -Scope CurrentUser -Force -AllowClobber
+} elseif ($installed.Version -lt $minVersion) {
+    Write-Host "PnP.PowerShell $($installed.Version) is older than $minVersion - updating..." -ForegroundColor Cyan
+    Update-Module -Name PnP.PowerShell -Force
+} else {
+    Write-Host "PnP.PowerShell $($installed.Version) is already up to date." -ForegroundColor DarkGray
 }
-Import-Module PnP.PowerShell -ErrorAction Stop
+
+Import-Module PnP.PowerShell -ErrorAction Stop -Force
 
 # --- 2. Create the site if it doesn't exist yet ------------------------------
 
 Write-Host "Checking whether $SiteUrl already exists (via $AdminUrl)..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $AdminUrl -DeviceLogin
+Connect-PnPOnline -Url $AdminUrl
 $existingSite = Get-PnPTenantSite -Url $SiteUrl -ErrorAction SilentlyContinue
 
 if (-not $existingSite) {
@@ -98,10 +111,10 @@ if (-not $existingSite) {
 
 Disconnect-PnPOnline
 
-# --- 3. Connect to the site via Azure AD (device code sign-in) --------------
+# --- 3. Connect to the site via Azure AD (module's own default sign-in) -----
 
 Write-Host "Connecting to $SiteUrl ..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $SiteUrl -DeviceLogin
+Connect-PnPOnline -Url $SiteUrl
 Write-Host "Connected." -ForegroundColor Green
 
 # --- 4. Create the list if it doesn't exist ----------------------------------
