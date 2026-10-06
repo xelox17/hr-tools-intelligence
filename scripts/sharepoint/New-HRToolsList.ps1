@@ -8,8 +8,10 @@
     - If the target site does not exist yet, creates it first as a
       SharePoint Communication site (via the tenant admin center), waits
       for provisioning to finish, then continues.
-    - Connects to the target SharePoint site via Azure AD (interactive
-      browser sign-in - no credentials are stored in this script).
+    - Connects to the target SharePoint site via Azure AD device code
+      sign-in (you'll be shown a short code and a URL to open in any
+      browser - no credentials are stored in this script, no app
+      registration needed).
     - Creates the "HR_Tools_Data" list if it does not already exist.
     - Ensures the required columns exist (Title already exists by default):
         URL          Hyperlink
@@ -68,7 +70,7 @@ Import-Module PnP.PowerShell -ErrorAction Stop
 # --- 2. Create the site if it doesn't exist yet ------------------------------
 
 Write-Host "Checking whether $SiteUrl already exists (via $AdminUrl)..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $AdminUrl -UseWebLogin
+Connect-PnPOnline -Url $AdminUrl -DeviceLogin
 $existingSite = Get-PnPTenantSite -Url $SiteUrl -ErrorAction SilentlyContinue
 
 if (-not $existingSite) {
@@ -96,10 +98,10 @@ if (-not $existingSite) {
 
 Disconnect-PnPOnline
 
-# --- 3. Connect to the site via Azure AD (simple browser sign-in) -----------
+# --- 3. Connect to the site via Azure AD (device code sign-in) --------------
 
 Write-Host "Connecting to $SiteUrl ..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $SiteUrl -UseWebLogin
+Connect-PnPOnline -Url $SiteUrl -DeviceLogin
 Write-Host "Connected." -ForegroundColor Green
 
 # --- 4. Create the list if it doesn't exist ----------------------------------
