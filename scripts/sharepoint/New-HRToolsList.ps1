@@ -5,6 +5,9 @@
     SharePoint instead of the hardcoded data/applications.ts array.
 
 .DESCRIPTION
+    - If the target site does not exist yet, creates it first as a
+      SharePoint Communication site (via the tenant admin center), waits
+      for provisioning to finish, then continues.
     - Connects to the target SharePoint site via Azure AD (interactive
       browser sign-in - no credentials are stored in this script).
     - Creates the "HR_Tools_Data" list if it does not already exist.
@@ -18,25 +21,41 @@
       re-run (it will not create duplicates, and will refresh existing rows).
 
 .PARAMETER SiteUrl
-    The SharePoint site to connect to. Defaults to the Lesaffre RH site -
-    override with -SiteUrl if the list should live on a different site.
+    The SharePoint site to connect to (and create, if it doesn't exist yet).
+    Defaults to the Lesaffre RH site - override with -SiteUrl if the list
+    should live on a different site.
+
+.PARAMETER SiteTitle
+    The site's display title, used only if the site has to be created.
+
+.PARAMETER AdminUrl
+    The tenant's SharePoint admin center URL, used only to create the site
+    if it's missing. Auto-derived from -SiteUrl's domain when not given
+    (e.g. lesaffre.sharepoint.com -> lesaffre-admin.sharepoint.com).
 
 .EXAMPLE
     ./New-HRToolsList.ps1
-    ./New-HRToolsList.ps1 -SiteUrl "https://lesaffre.sharepoint.com/sites/LINT_RH"
+    ./New-HRToolsList.ps1 -SiteUrl "https://lesaffre.sharepoint.com/sites/LINT_RH" -SiteTitle "LINT RH"
 
 .NOTES
     Requires the PnP.PowerShell module (installed automatically for the
     current user if missing) and an Azure AD account with permission to
-    create lists on the target site.
+    create sites (SharePoint admin or Global admin) the first time it's
+    run, and permission to create lists on the target site on every run.
 #>
 
 [CmdletBinding()]
 param(
-    [string]$SiteUrl = "https://lesaffre.sharepoint.com/sites/LINT_RH"
+    [string]$SiteUrl = "https://lesaffre.sharepoint.com/sites/LINT_RH",
+    [string]$SiteTitle = "LINT RH",
+    [string]$AdminUrl
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $AdminUrl) {
+    $AdminUrl = $SiteUrl -replace "^(https://[^.]+)\.sharepoint\.com.*$", '$1-admin.sharepoint.com'
+}
 
 # --- 1. Make sure PnP.PowerShell is available -------------------------------
 
@@ -46,13 +65,44 @@ if (-not (Get-Module -ListAvailable -Name PnP.PowerShell)) {
 }
 Import-Module PnP.PowerShell -ErrorAction Stop
 
-# --- 2. Connect via Azure AD (interactive - opens a browser sign-in) --------
+# --- 2. Create the site if it doesn't exist yet ------------------------------
+
+Write-Host "Checking whether $SiteUrl already exists (via $AdminUrl)..." -ForegroundColor Cyan
+Connect-PnPOnline -Url $AdminUrl -Interactive
+$existingSite = Get-PnPTenantSite -Url $SiteUrl -ErrorAction SilentlyContinue
+
+if (-not $existingSite) {
+    Write-Host "Site not found - creating it as a Communication site..." -ForegroundColor Cyan
+    New-PnPSite -Type CommunicationSite -Title $SiteTitle -Url $SiteUrl | Out-Null
+
+    Write-Host "Waiting for the site to finish provisioning..." -ForegroundColor Cyan
+    $ready = $false
+    for ($i = 0; $i -lt 24; $i++) {
+        Start-Sleep -Seconds 10
+        $site = Get-PnPTenantSite -Url $SiteUrl -ErrorAction SilentlyContinue
+        if ($site -and $site.Status -eq "Active") {
+            $ready = $true
+            break
+        }
+        Write-Host "  still provisioning... ($(($i + 1) * 10)s)" -ForegroundColor DarkGray
+    }
+    if (-not $ready) {
+        throw "Site $SiteUrl did not finish provisioning in time. Check the SharePoint admin center and re-run this script once it shows as Active."
+    }
+    Write-Host "Site created and active." -ForegroundColor Green
+} else {
+    Write-Host "Site already exists - reusing it." -ForegroundColor Yellow
+}
+
+Disconnect-PnPOnline
+
+# --- 3. Connect to the site via Azure AD (interactive - browser sign-in) ----
 
 Write-Host "Connecting to $SiteUrl ..." -ForegroundColor Cyan
 Connect-PnPOnline -Url $SiteUrl -Interactive
 Write-Host "Connected." -ForegroundColor Green
 
-# --- 3. Create the list if it doesn't exist ----------------------------------
+# --- 4. Create the list if it doesn't exist ----------------------------------
 
 $listName = "HR_Tools_Data"
 $list = Get-PnPList -Identity $listName -ErrorAction SilentlyContinue
@@ -64,7 +114,7 @@ if (-not $list) {
     Write-Host "List '$listName' already exists - reusing it." -ForegroundColor Yellow
 }
 
-# --- 4. Ensure the required columns exist ------------------------------------
+# --- 5. Ensure the required columns exist ------------------------------------
 
 $categoryChoices = @(
     "HRIS",
@@ -114,7 +164,7 @@ Ensure-Field -InternalName "Scope"       -DisplayName "Scope"       -Type "Text"
 Ensure-Field -InternalName "Country"     -DisplayName "Country"     -Type "Text"
 Ensure-Field -InternalName "Description" -DisplayName "Description" -Type "MultilineText"
 
-# --- 5. The UC0 portfolio (10 tools) -----------------------------------------
+# --- 6. The UC0 portfolio (10 tools) -----------------------------------------
 # Scope/Country follow the same convention as my-app/src/data/applications.ts:
 # "Corporate" + empty Country = available everywhere; "Local" + a Country =
 # restricted to that country.
@@ -132,7 +182,7 @@ $tools = @(
     @{ Title = "PayFit";             Url = "https://payfit.com/";                                       Category = "Payroll";         Scope = "Local";     Country = "France"; Description = "Payroll and HR management for small/local entities." }
 )
 
-# --- 6. Upsert each tool by Title ---------------------------------------------
+# --- 7. Upsert each tool by Title ---------------------------------------------
 
 Write-Host "Loading $($tools.Count) tools into '$listName'..." -ForegroundColor Cyan
 
