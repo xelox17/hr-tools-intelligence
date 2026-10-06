@@ -68,7 +68,7 @@ Import-Module PnP.PowerShell -ErrorAction Stop
 # --- 2. Create the site if it doesn't exist yet ------------------------------
 
 Write-Host "Checking whether $SiteUrl already exists (via $AdminUrl)..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $AdminUrl -Interactive
+Connect-PnPOnline -Url $AdminUrl -UseWebLogin
 $existingSite = Get-PnPTenantSite -Url $SiteUrl -ErrorAction SilentlyContinue
 
 if (-not $existingSite) {
@@ -96,10 +96,10 @@ if (-not $existingSite) {
 
 Disconnect-PnPOnline
 
-# --- 3. Connect to the site via Azure AD (interactive - browser sign-in) ----
+# --- 3. Connect to the site via Azure AD (simple browser sign-in) -----------
 
 Write-Host "Connecting to $SiteUrl ..." -ForegroundColor Cyan
-Connect-PnPOnline -Url $SiteUrl -Interactive
+Connect-PnPOnline -Url $SiteUrl -UseWebLogin
 Write-Host "Connected." -ForegroundColor Green
 
 # --- 4. Create the list if it doesn't exist ----------------------------------
