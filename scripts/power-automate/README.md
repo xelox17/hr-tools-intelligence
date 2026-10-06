@@ -13,6 +13,15 @@ Un `README.md` détaillé (comportement exact du flow, valeurs à vérifier
 avant import, plan de secours si l'import échoue) est inclus **à
 l'intérieur du zip**, à sa racine.
 
+**v2** : la v1 échouait à l'import (56 %, `Object reference not set to an
+instance of an object` sur le composant Workflow) — les références de
+connexion étaient mal câblées. Corrigé : les deux connection references
+portent maintenant un nom logique préfixé par l'éditeur
+(`lesaffrehr_sharedcommondataserviceforapps`,
+`lesaffrehr_sharedoffice365`), identique entre `customizations.xml` et le
+bloc `connectionReferences` du JSON du flow, et chaque action référence sa
+connexion via `host.connectionReferenceName` plutôt que `connectionName`.
+
 ## Import rapide
 
 1. [make.powerautomate.com](https://make.powerautomate.com) → **Solutions**
